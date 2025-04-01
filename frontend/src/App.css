@@ -1,0 +1,19 @@
+.content {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+.chat-window {
+  width: 70%;
+  background: #f4f4f4;
+  padding: 1rem;
+}
+
+.chat-history {
+  width: 30%;
+  background: rgba(64, 61, 61, 0.75);
+  color: white;
+  padding: 1rem;
+  overflow-y: auto;
+}
