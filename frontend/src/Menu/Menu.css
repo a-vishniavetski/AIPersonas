@@ -1,0 +1,26 @@
+.header-text {
+    display: flex;
+    position: absolute;
+    left: 35%;
+}
+input[type="image"] {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 5px solid black;
+    object-fit: cover;
+}
+
+.personas-list {
+    display: flex;
+    gap: 15px;
+    width: 250px;
+    height: 250px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -125px 0 0 -125px;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: center;
+}

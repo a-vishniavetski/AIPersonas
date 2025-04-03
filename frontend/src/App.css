@@ -6,8 +6,8 @@
 
 .chat-window {
   width: 70%;
-  background: #f4f4f4;
-  padding: 1rem;
+  background: black;
+  padding: 1px;
 }
 
 .chat-history {

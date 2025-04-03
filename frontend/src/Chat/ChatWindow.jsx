@@ -39,7 +39,7 @@ const ChatWindow = () => {
         <form className="chatbot-input" onSubmit={handleSubmit}>
           <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
           />
-          <button type="submit">Send</button>
+          <button type="submit">↑</button>
         </form>
       </div>
     </div>
