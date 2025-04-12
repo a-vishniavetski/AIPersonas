@@ -1,7 +1,12 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../security'))
 
-app = FastAPI()
+import uvicorn
+from pydantic import BaseModel
+from security.app import app
+
+# app = FastAPI()
 
 
 class UserMessage(BaseModel):
@@ -68,3 +73,8 @@ async def send_user_message(request: UserMessage):
         'message': request.message,
         'response': 'I got your message'
     }
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+    print(app.routes)
+
