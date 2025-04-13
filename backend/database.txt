@@ -1,0 +1,32 @@
+--Tabela userów
+--TODO: zaktualizować dla sequrity
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL
+);
+
+--Tabela person
+--TODO: dodać zdjęcia
+CREATE TABLE personas (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    name VARCHAR(255) NOT NULL,
+    description TEXT
+);
+
+--Tabela historii dialogów
+CREATE TABLE conversations (
+    id SERIAL PRIMARY KEY,
+    persona_id INTEGER REFERENCES personas(id),
+    user_id INTEGER REFERENCES users(id)
+);
+
+--Tabela wiadomości
+CREATE TABLE messages (
+    id SERIAL PRIMARY KEY,
+    conversation_id INTEGER REFERENCES conversations(id),
+    sender VARCHAR(50) CHECK (sender IN ('user', 'bot')),
+    content TEXT NOT NULL,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
