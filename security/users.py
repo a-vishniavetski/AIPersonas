@@ -14,7 +14,7 @@ from fastapi_users.authentication import (
 from fastapi_users.db import SQLAlchemyUserDatabase
 from httpx_oauth.clients.google import GoogleOAuth2
 
-from db import User, get_user_db
+from security.db import User, get_user_db
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

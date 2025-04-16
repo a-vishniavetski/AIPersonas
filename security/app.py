@@ -7,9 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request 
 from starlette.middleware.sessions import SessionMiddleware
 
-from db import User, create_db_and_tables
-from schemas import UserCreate, UserRead, UserUpdate
-from users import (
+from security.db import User, create_db_and_tables
+from security.schemas import UserCreate, UserRead, UserUpdate
+from security.users import (
     SECRET,
     auth_backend,
     current_active_user,
