@@ -17,9 +17,13 @@ const ChatWindow = () => {
     setMessages([...messages, { text: input, sender: 'user' }]);
     try {
       const response = await fetch(
-          `http://127.0.0.1:8000/api/get_answer/?prompt=${input}&name=${persona_name}`,
+          `http://127.0.0.1:8000/api/get_answer`,
           {
-        method: "GET"
+            method: "POST",
+            body: JSON.stringify({
+                user_prompt: input,
+                persona: persona_name
+            })
       });
 
       if (response.status !== 200) {
@@ -31,7 +35,7 @@ const ChatWindow = () => {
       const data = await response.json();
       setTimeout(() => {
       setMessages(prev => [...prev, {
-        text: `Echo: ${data}`,
+        text: data.response,
         sender: 'bot'
       }]);
     }, 500);
