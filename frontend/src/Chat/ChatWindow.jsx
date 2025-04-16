@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import {useParams} from "react-router-dom";
 import './ChatWindow.css';
 
 const ChatWindow = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const {persona_name} = useParams();
 
   // Handle message submission
   const handleSubmit = async (e) => {
@@ -14,7 +16,9 @@ const ChatWindow = () => {
     // Add user message
     setMessages([...messages, { text: input, sender: 'user' }]);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/get_answer/?param=${input}`, {
+      const response = await fetch(
+          `http://127.0.0.1:8000/api/get_answer/?prompt=${input}&name=${persona_name}`,
+          {
         method: "GET"
       });
 

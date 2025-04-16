@@ -41,18 +41,28 @@ function Menu() {
               <h1>Choose your character!</h1>
           </div>
           <div className="personas-list">
-              <form action="/ChatWindow">
-                <input type="image" src="src/Menu/test_image.png" alt="Submit" width="100" height="50"/>
+              <form action="/ChatWindow/Cleopatra">
+                  <button type="submit">
+                        <img src="src/Menu/cleopatra.png" alt="Submit" width="100" height="50"/>
+                  </button>
+              </form>
+              <form action="/ChatWindow/Beethoven">
+                  <button type="submit">
+                        <img src="src/Menu/beethoven.png" alt="Submit" width="100" height="50"/>
+                  </button>
               </form>
               <form action={addPersona}>
-                <input type="image" src="src/Menu/plus.png" alt="Submit" width="100" height="50"/>
+                  <button type="submit">
+                        <img src="src/Menu/plus.png" alt="Submit" width="100" height="50"/>
+                  </button>
               </form>
               {isOpen && (
                   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
                       <div className="bg-white p-8 rounded shadow-lg relative">
                           <input value={personasName} type="name" className="form-control" id="persona_name_input"
                                  placeholder="Persona's name"/>
-                          <textarea value={personasDesc} className="form-control" id="persona_description_textarea" rows="3"
+                          <textarea value={personasDesc} className="form-control" id="persona_description_textarea"
+                                    rows="3"
                                     placeholder="Enter description"></textarea>
                           <button onClick={acceptPersona} className="mt-4 bg-red-500 text-white p-2 rounded">
                               Save Persona

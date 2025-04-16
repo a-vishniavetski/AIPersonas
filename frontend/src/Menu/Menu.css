@@ -3,12 +3,17 @@
     position: absolute;
     left: 35%;
 }
-input[type="image"] {
+img, input[type="image"] {
     width: 100px;
     height: 100px;
     border-radius: 50%;
     border: 5px solid black;
     object-fit: cover;
+}
+button {
+    background: none;
+    width: 100px;
+    height: 100px;
 }
 
 input[type="name"] {

@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 *.local
+/security/google_oauth_client.json
 
 # Editor directories and files
 .vscode/*

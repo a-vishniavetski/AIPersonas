@@ -12,7 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Menu />} />
         <Route
-          path="/ChatWindow"
+          path="/ChatWindow/:persona_name"
           element={
             <div className="content">
               <div className="chat-window">
