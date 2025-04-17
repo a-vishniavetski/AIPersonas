@@ -20,8 +20,11 @@ const ChatWindow = () => {
           `http://127.0.0.1:8000/api/get_answer`,
           {
             method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
             body: JSON.stringify({
-                user_prompt: input,
+                prompt: input,
                 persona: persona_name
             })
       });
@@ -35,7 +38,7 @@ const ChatWindow = () => {
       const data = await response.json();
       setTimeout(() => {
       setMessages(prev => [...prev, {
-        text: data.response,
+        text: data,
         sender: 'bot'
       }]);
     }, 500);
