@@ -4,3 +4,4 @@ uvicorn[standard]
 aiosqlite
 itsdangerous
 asyncpg
+huggingface_hub
