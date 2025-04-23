@@ -1,10 +1,14 @@
+import os
+import sys
+
+# sys.path.append(os.path.join(os.path.dirname(__file__), '../security'))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from dotenv import load_dotenv
 from huggingface_hub import login
 import json
-import os
 from pydantic import BaseModel
 from security.app import app
-import sys
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import uuid
@@ -12,8 +16,6 @@ import uvicorn
 
 from personas import insert_persona
 
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '../security'))
 
 load_dotenv()
 
