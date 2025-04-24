@@ -22,7 +22,8 @@ import uvicorn
 from backend.database_interactions import (
     insert_persona_and_conversation, 
     save_message,
-    get_messages_from_conversation
+    get_messages_from_conversation,
+    get_all_user_personas
 )
 
 
@@ -64,6 +65,8 @@ class UserPersonaData(BaseModel):
 class ConversationHistory(BaseModel):
     conversation_id: int
 
+class UserData(BaseModel):
+    user_id: uuid.UUID
 
 @app.post('/api/add_persona')
 async def add_persona(request: UserPersonaData, user: User = Depends(current_active_user)):
@@ -77,8 +80,23 @@ async def add_persona(request: UserPersonaData, user: User = Depends(current_act
     }
 
 
+@app.post('/api/get_user_personas')
+async def get_user_personas(request: UserData, user: User = Depends(current_active_user)):
+    """
+    Get all personas of the user
+    """
+    user_id = user.id
+    persona_names = await get_all_user_personas(user_id)
+    return {
+        'persona_names': persona_names,
+    }
+
+
 @app.post('/api/chat_history')
 async def get_chats_history(request: ConversationHistory, user: User = Depends(current_active_user)):
+    """
+    Get ONE specific conversation to load into the chat window.
+    """
     messages = await get_messages_from_conversation(request.conversation_id)
     
     return {

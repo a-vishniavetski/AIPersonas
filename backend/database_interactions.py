@@ -62,3 +62,10 @@ async def get_messages_from_conversation(conversation_id):
         result = await session.execute(query)
         messages = result.scalars().all()
         return [{"text": msg.content, "sender": msg.sender} for msg in messages]
+    
+async def get_all_user_personas(user_id):
+    async with AsyncSession(engine) as session:
+        query = select(Personas).filter_by(user_id=user_id)
+        result = await session.execute(query)
+        personas = result.scalars().all()
+        return [{"persona_name": persona.name} for persona in personas]
