@@ -1,11 +1,55 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {useParams} from "react-router-dom";
 import './ChatWindow.css';
 
 const ChatWindow = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const {persona_name} = useParams();
+  var {persona_name} = useParams();
+  var user_id = "NoneForNow";
+
+  // Get user ID from localStorage
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+
+    if (!token) {
+      alert("You must be logged in to send messages");
+      return;
+    }
+    if (!persona_name) {
+      alert("You must select a persona to send messages");
+      return;
+    }
+    
+    // GET OR CREATE PERSONA AND RETURN ITS ID
+    fetch("http://localhost:8000/api/add_persona", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+        persona_name: persona_name,
+        persona_description: persona_name,
+      }),
+      credentials: "include",
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Persona ID:", data.persona_id);
+      // You can store persona_id if needed
+      const persona_id = data.persona_id;
+      user_id = data.user_id;
+      persona_name = data.persona_name;
+      console.log("Persona ID:", persona_id);
+      console.log("User ID:", user_id);
+      console.log("Persona name:", persona_name);
+    })
+    .catch(err => console.error("Persona creation failed:", err));
+  }, [persona_name]);
+
 
   // Handle message submission
   const handleSubmit = async (e) => {
@@ -13,8 +57,6 @@ const ChatWindow = () => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // Get user ID from localStorage
-    const token = localStorage.getItem("token");
     if (!token) {
       alert("You must be logged in to send messages");
       return;

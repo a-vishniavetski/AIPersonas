@@ -53,14 +53,19 @@ class UserMessage(BaseModel):
 
 
 class UserPersonaData(BaseModel):
-    user_id: uuid.UUID
     persona_name: str
     persona_description: str
 
 
 @app.post('/api/add_persona')
-async def add_persona(request: UserPersonaData):
-    insert_persona(request.user_id, request.persona_name, request.persona_description)
+async def add_persona(request: UserPersonaData, user: User = Depends(current_active_user)):
+    user_id = user.id
+    persona_id = await insert_persona(user_id, request.persona_name, request.persona_description)
+    return {
+        'persona_id': persona_id,
+        'persona_name': request.persona_name,
+        'user_id': user_id,
+    }
 
 
 @app.get('api/chat_history')
