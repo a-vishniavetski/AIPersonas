@@ -13,6 +13,7 @@ function Menu() {
     e.preventDefault();
 
     try {
+        console.log("TRYING");
       const response = await fetch("https://localhost:8080/api/add_persona", {
         method: "POST",
         body: JSON.stringify({

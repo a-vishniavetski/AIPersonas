@@ -19,7 +19,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import uuid
 import uvicorn
 
-from personas import insert_persona
+from personas import insert_persona_and_conversation
 
 
 load_dotenv()
@@ -60,11 +60,12 @@ class UserPersonaData(BaseModel):
 @app.post('/api/add_persona')
 async def add_persona(request: UserPersonaData, user: User = Depends(current_active_user)):
     user_id = user.id
-    persona_id = await insert_persona(user_id, request.persona_name, request.persona_description)
+    persona_id, conversation_id = await insert_persona_and_conversation(user_id, request.persona_name, request.persona_description)
     return {
         'persona_id': persona_id,
         'persona_name': request.persona_name,
         'user_id': user_id,
+        'conversation_id': conversation_id,
     }
 
 

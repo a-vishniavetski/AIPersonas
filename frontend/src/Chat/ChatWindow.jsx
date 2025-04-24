@@ -11,7 +11,10 @@ const ChatWindow = () => {
   // Get user ID from localStorage
   const token = localStorage.getItem("token");
 
+  const didRunOnce = React.useRef(false);  // flag for React development behavior (useEffect runs twice in dev, but we don't want that)
   useEffect(() => {
+    if (didRunOnce.current) return; // Prevents the effect from running again
+    didRunOnce.current = true; // Set the flag to true after the first run
 
     if (!token) {
       alert("You must be logged in to send messages");
@@ -46,6 +49,7 @@ const ChatWindow = () => {
       console.log("Persona ID:", persona_id);
       console.log("User ID:", user_id);
       console.log("Persona name:", persona_name);
+      console.log("Conversation ID:", data.conversation_id);
     })
     .catch(err => console.error("Persona creation failed:", err));
   }, [persona_name]);
