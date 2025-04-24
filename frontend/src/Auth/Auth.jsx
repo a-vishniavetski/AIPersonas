@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Add this import
 
 const Auth = () => {
+  const navigate = useNavigate(); // Add this line
   const handleOAuth = async (e) => {
     e.preventDefault();
 
@@ -12,6 +14,7 @@ const Auth = () => {
           headers: {
             Accept: "application/json",
           },
+          credentials: "include", // Add this
         },
       );
 
@@ -40,13 +43,14 @@ const Auth = () => {
             Accept: "application/json",
             Authorization: "Bearer " + localStorage.getItem("token"),
           },
+          credentials: "include", // Add this
         },
       );
 
       if (response.status !== 200) {
         alert("shit happens");
         throw new Error(
-          "Error while fetching google authorization request: ${response.status}",
+          `Error while fetching google authorization request: ${response.status}`,
         );
       }
 
