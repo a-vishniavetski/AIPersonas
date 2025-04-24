@@ -1,6 +1,5 @@
 import "./App.css";
 import ChatWindow from "./Chat/ChatWindow.jsx";
-import { ChatHistory } from "./ChatHistory/ChatHistory.js";
 import Menu from "./Menu/Menu.jsx";
 import Auth from "./Auth/Auth.jsx";
 
@@ -17,9 +16,6 @@ function App() {
             <div className="content">
               <div className="chat-window">
                 <ChatWindow />
-              </div>
-              <div className="chat-history">
-                <ChatHistory />
               </div>
             </div>
           }
