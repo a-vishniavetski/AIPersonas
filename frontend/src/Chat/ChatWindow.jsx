@@ -6,7 +6,11 @@ const ChatWindow = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   var {persona_name} = useParams();
-  var user_id = "NoneForNow";
+  const [userId, setUserId] = useState(null);
+  const [personaId, setPersonaId] = useState(null);
+  const [conversationId, setConversationId] = useState(null);
+
+  const [pendingPrompt, setPendingPrompt] = useState(null);
 
   // Get user ID from localStorage
   const token = localStorage.getItem("token");
@@ -33,7 +37,7 @@ const ChatWindow = () => {
         "Authorization": `Bearer ${token}`,
       },
       body: JSON.stringify({
-        user_id: user_id,
+        user_id: userId,
         persona_name: persona_name,
         persona_description: persona_name,
       }),
@@ -43,96 +47,58 @@ const ChatWindow = () => {
     .then(data => {
       console.log("Persona ID:", data.persona_id);
       // You can store persona_id if needed
-      const persona_id = data.persona_id;
-      user_id = data.user_id;
-      persona_name = data.persona_name;
-      console.log("Persona ID:", persona_id);
-      console.log("User ID:", user_id);
-      console.log("Persona name:", persona_name);
-      console.log("Conversation ID:", data.conversation_id);
+      setPersonaId(data.persona_id);
+      setUserId(data.user_id);
+      setConversationId(data.conversation_id);
+      // console.log("Conversation ID:", conversationId);
+      // console.log("User ID:", userId);
+      // console.log("Persona ID:", personaId);
+      // console.log("Persona name:", persona_name);
     })
     .catch(err => console.error("Persona creation failed:", err));
-  }, [persona_name]);
+  }, [token, persona_name]);
 
-
-  // Handle message submission
-  const handleSubmit = async (e) => {
-
-    e.preventDefault();
-    if (!input.trim()) return;
-
-    if (!token) {
-      alert("You must be logged in to send messages");
-      return;
+  useEffect(() => {
+    if (pendingPrompt === null || conversationId === null || personaId === null || userId === null) {
+      return;            // bail until we have both
     }
 
-    // Add user message
-    setMessages([...messages, { text: input, sender: 'user' }]);
-    try {
-      // First, save the message to database
-      const saveResponse = await fetch(
-        `http://localhost:8000/api/user_message`,
-        {
-          method: "POST",
-          headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            prompt: input,
-            persona: persona_name,
-          }),
-          credentials: "include", // Add this
-        }
-      );
-  
-      if (!saveResponse.ok) {
-        console.error("Failed to save message");
-      }
-
-      // print saveresponse
-      const saveResponseData = await saveResponse.json();
-      console.log("Prompt saved:", saveResponseData);
-
-
-      const response = await fetch(
-          `http://127.0.0.1:8000/api/get_answer`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                prompt: input,
-                persona: persona_name
-            })
+    console.log("Conversation ID:", conversationId);
+    console.log("User ID:", userId);
+    console.log("Persona ID:", personaId);
+    (async () => {
+      // immediately clear it so this effect won’t re-fire
+      const prompt = pendingPrompt;
+      setPendingPrompt(null);
+      console.log("Prompt:", prompt);
+      // send to your get_answer endpoint
+      const res = await fetch('http://localhost:8000/api/get_answer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          prompt,
+          persona: persona_name,
+          conversation_id: conversationId
+        }),
+        credentials: 'include'
       });
+      const answer = await res.json();
+      setMessages(msgs => [...msgs, { text: answer, sender: 'bot' }]);
+    })();
+  }, [pendingPrompt, conversationId, personaId, token]);
 
-      if (response.status !== 200) {
-        alert("shit happens");
-        throw new Error(
-          "Error while sending prompt",
-        );
-      }
-      const data = await response.json();
-      setTimeout(() => {
-      setMessages(prev => [...prev, {
-        text: data,
-        sender: 'bot'
-      }]);
-    }, 500);
+  // ——— on form submit, push user message and trigger pendingPrompt ———
+  const handleSubmit = e => {
+    e.preventDefault();
+    if (!input.trim() || !token) return;
 
-    } catch (err) {
-      console.error("Błąd: ", err);
-    }
-    // TODO Simulate bot response (placeholder)
-    // setTimeout(() => {
-    //   setMessages(prev => [...prev, {
-    //     text: `Echo: ${input}`,
-    //     sender: 'bot'
-    //   }]);
-    // }, 500);
-
+    // add user’s message
+    setMessages(msgs => [...msgs, { text: input, sender: 'user' }]);
+    // hand off to the effect above
+    setPendingPrompt(input);
     setInput('');
   };
 

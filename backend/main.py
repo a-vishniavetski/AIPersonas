@@ -13,13 +13,13 @@ import json
 from pydantic import BaseModel
 from security.app import app
 from security.users import current_active_user
-from security.db import User
+from security.db import SenderType, User
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import uuid
 import uvicorn
 
-from personas import insert_persona_and_conversation
+from backend.database_interactions import insert_persona_and_conversation, save_message
 
 
 load_dotenv()
@@ -50,6 +50,7 @@ model.load_state_dict(adapter_weights, strict=False)
 class UserMessage(BaseModel):
     prompt: str
     persona: str
+    conversation_id: int
 
 
 class UserPersonaData(BaseModel):
@@ -103,7 +104,9 @@ async def send_user_message(request: UserMessage, user: User = Depends(current_a
 
 
 @app.post('/api/get_answer')
-async def get_answer(request: UserMessage):
+async def get_answer(request: UserMessage, User: User = Depends(current_active_user)):
+    await save_message(request.conversation_id, SenderType.USER, request.prompt)
+
     system_prompt = f"""
         I want you to act like {request.persona}. I want you to respond and answer like {request.persona},
         using the tone, manner and vocabulary {request.persona} would use. 
@@ -131,6 +134,8 @@ async def get_answer(request: UserMessage):
         outputs[0][inputs["input_ids"].shape[1]:],
         skip_special_tokens=True
     )
+
+    await save_message(request.conversation_id, SenderType.BOT, generated_text)
     return generated_text
 
 

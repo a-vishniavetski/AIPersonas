@@ -53,7 +53,7 @@ class Messages(Base):
     conversation_id: Mapped[int] = mapped_column(ForeignKey("conversations.id"))
     sender: Mapped[SenderType] = mapped_column()
     content: Mapped[str] = mapped_column(nullable=True)
-    sent_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(datetime.timezone.utc))
+    sent_at: Mapped[DateTime] = mapped_column(DateTime, default=lambda: datetime.datetime.now())
 
 engine = create_async_engine(DATABASE_URL)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
