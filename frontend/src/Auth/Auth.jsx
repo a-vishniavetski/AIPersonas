@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Add this import
+import {Link, useNavigate} from "react-router-dom"; // Add this import
 
 const Auth = () => {
   const navigate = useNavigate(); // Add this line
@@ -110,6 +110,11 @@ const Auth = () => {
             <form className="authTestForm" onSubmit={handleAuthTest}>
               <button type="submit">Test authorization</button>
             </form>
+            <Link to="/">
+              <button className="bg-blue-500 text-white p-2 rounded mt-2 mr-2">
+                Go to Main Page
+              </button>
+            </Link>
           </div>
         )}
       </div>

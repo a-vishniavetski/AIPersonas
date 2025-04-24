@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRef } from 'react';
-import {useParams} from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
 import './ChatWindow.css';
 
 const ChatWindow = () => {
@@ -149,6 +149,11 @@ const ChatWindow = () => {
     <div className="chatbot-container">
       {/* Chatbot window */}
       <div className="chatbot-window">
+        <Link to="/">
+        <button className="bg-blue-500 text-white p-2 rounded mt-2 mr-2">
+          Go to Main Page
+        </button>
+      </Link>
         <div className="chatbot-header">
           <h3>Chatbot</h3>
         </div>
