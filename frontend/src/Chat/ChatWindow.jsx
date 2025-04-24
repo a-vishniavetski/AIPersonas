@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useRef } from 'react';
 import {useParams} from "react-router-dom";
 import './ChatWindow.css';
 
@@ -11,6 +12,8 @@ const ChatWindow = () => {
   const [conversationId, setConversationId] = useState(null);
 
   const [pendingPrompt, setPendingPrompt] = useState(null);
+
+  const messagesEndRef = useRef(null);
 
   // Get user ID from localStorage
   const token = localStorage.getItem("token");
@@ -58,6 +61,41 @@ const ChatWindow = () => {
     .catch(err => console.error("Persona creation failed:", err));
   }, [token, persona_name]);
 
+    // ——— LOAD HISTORY ———
+  useEffect(() => {
+    if (conversationId === null || userId === null) {
+      return;  // wait until both IDs are available
+    }
+
+    (async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/chat_history', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            conversation_id: conversationId,
+          })
+        });
+
+        if (!res.ok) {
+          console.error('Failed to load history', await res.text());
+          return;
+        }
+
+        const history = await res.json();
+        console.log('Chat history:', history);
+        setMessages(Array.isArray(history) ? history : history.messages || []);
+      } catch (err) {
+        console.error('Error fetching chat history:', err);
+      }
+    })();
+  }, [conversationId, userId, token]);
+
+
   useEffect(() => {
     if (pendingPrompt === null || conversationId === null || personaId === null || userId === null) {
       return;            // bail until we have both
@@ -102,6 +140,11 @@ const ChatWindow = () => {
     setInput('');
   };
 
+    // ——— scroll to bottom on new messages ———
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   return (
     <div className="chatbot-container">
       {/* Chatbot window */}
@@ -109,10 +152,11 @@ const ChatWindow = () => {
         <div className="chatbot-header">
           <h3>Chatbot</h3>
         </div>
-        <div className="chatbot-messages">
+        <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
           {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >{message.text}
           </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
         <form className="chatbot-input" onSubmit={handleSubmit}>
           <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."

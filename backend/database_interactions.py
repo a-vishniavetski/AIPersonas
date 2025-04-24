@@ -54,3 +54,11 @@ async def save_message(conversation_id, sender, content):
         await session.commit()
         await session.refresh(new_message)
         return new_message
+    
+
+async def get_messages_from_conversation(conversation_id):
+    async with AsyncSession(engine) as session:
+        query = select(Messages).filter_by(conversation_id=conversation_id).order_by(Messages.sent_at)
+        result = await session.execute(query)
+        messages = result.scalars().all()
+        return [{"text": msg.content, "sender": msg.sender} for msg in messages]

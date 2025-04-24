@@ -19,7 +19,11 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import uuid
 import uvicorn
 
-from backend.database_interactions import insert_persona_and_conversation, save_message
+from backend.database_interactions import (
+    insert_persona_and_conversation, 
+    save_message,
+    get_messages_from_conversation
+)
 
 
 load_dotenv()
@@ -57,6 +61,9 @@ class UserPersonaData(BaseModel):
     persona_name: str
     persona_description: str
 
+class ConversationHistory(BaseModel):
+    conversation_id: int
+
 
 @app.post('/api/add_persona')
 async def add_persona(request: UserPersonaData, user: User = Depends(current_active_user)):
@@ -70,20 +77,13 @@ async def add_persona(request: UserPersonaData, user: User = Depends(current_act
     }
 
 
-@app.get('api/chat_history')
-async def get_chats_history():
-    histories = [
-        {
-            'persona_id': '1'
-        },
-        {
-            'persona_id': '2'
-        },
-        {
-            'persona_id': '3'
-        },
-    ]
-    return histories
+@app.post('/api/chat_history')
+async def get_chats_history(request: ConversationHistory, user: User = Depends(current_active_user)):
+    messages = await get_messages_from_conversation(request.conversation_id)
+    
+    return {
+        'messages': messages,
+    }
 
 
 @app.post('/api/user_message')
