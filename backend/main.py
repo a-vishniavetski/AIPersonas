@@ -1,6 +1,9 @@
 import os
 import sys
 
+from fastapi import Depends, HTTPException, Header
+
+
 # sys.path.append(os.path.join(os.path.dirname(__file__), '../security'))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -9,6 +12,8 @@ from huggingface_hub import login
 import json
 from pydantic import BaseModel
 from security.app import app
+from security.users import current_active_user
+from security.db import User
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import uuid
@@ -75,10 +80,19 @@ async def get_chats_history():
 
 
 @app.post('/api/user_message')
-async def send_user_message(request: UserMessage):
+async def send_user_message(request: UserMessage, user: User = Depends(current_active_user)):
+
+    # Extract user ID from token
+    # token = authorization.replace("Bearer ", "") if authorization else None
+    # if not token:
+    #     raise HTTPException(status_code=401, detail="Not authenticated")
+    user_id = user.id
+    user_email = user.email
     return {
-        'message': request.message,
-        'response': 'I got your message'
+        'prompt': request.prompt,
+        'response': 'I got your message',
+        'user_id': user_id,
+        'user_email': user_email,
     }
 
 

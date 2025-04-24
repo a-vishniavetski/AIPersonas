@@ -13,9 +13,42 @@ const ChatWindow = () => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    // Get user ID from localStorage
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You must be logged in to send messages");
+      return;
+    }
+
     // Add user message
     setMessages([...messages, { text: input, sender: 'user' }]);
     try {
+      // First, save the message to database
+      const saveResponse = await fetch(
+        `http://localhost:8000/api/user_message`,
+        {
+          method: "POST",
+          headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            prompt: input,
+            persona: persona_name,
+          }),
+          credentials: "include", // Add this
+        }
+      );
+  
+      if (!saveResponse.ok) {
+        console.error("Failed to save message");
+      }
+
+      // print saveresponse
+      const saveResponseData = await saveResponse.json();
+      console.log("Prompt saved:", saveResponseData);
+
+
       const response = await fetch(
           `http://127.0.0.1:8000/api/get_answer`,
           {
