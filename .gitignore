@@ -7,10 +7,12 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+security/__pycache__/*
 node_modules
 dist
 dist-ssr
 *.local
+/security/google_oauth_client.json
 
 # Editor directories and files
 .vscode/*
