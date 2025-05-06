@@ -14,13 +14,14 @@ from pydantic import BaseModel
 from security.app import app
 from security.users import current_active_user
 from security.db import SenderType, User
+from backend.quadrant_db_interactions import *
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import uuid
 import uvicorn
 
 from backend.database_interactions import (
-    insert_persona_and_conversation, 
+    insert_persona_and_conversation,
     save_message,
     get_messages_from_conversation,
     get_all_user_personas
@@ -98,7 +99,7 @@ async def get_chats_history(request: ConversationHistory, user: User = Depends(c
     Get ONE specific conversation to load into the chat window.
     """
     messages = await get_messages_from_conversation(request.conversation_id)
-    
+
     return {
         'messages': messages,
     }
@@ -125,18 +126,41 @@ async def send_user_message(request: UserMessage, user: User = Depends(current_a
 async def get_answer(request: UserMessage, User: User = Depends(current_active_user)):
     await save_message(request.conversation_id, SenderType.USER, request.prompt)
 
+    # Search in qdrant before generating message
+    search_results = search_messages_in_qdrant(request.conversation_id)
+
+    # Prepare message from qdrant
+    conversation_history = process_qdrant_results(search_results)
+
+
+    # system_prompt = f"""
+    #     I want you to act like {request.persona}. I want you to respond and answer like {request.persona},
+    #     using the tone, manner and vocabulary {request.persona} would use.
+    #     You must know all of the knowledge of {request.persona}.
+    #
+    #     The status of you is as follows:
+    #     Location: Poland
+    #
+    #     The interactions are as follows:
+    #     """
+    #
+    # full_prompt = system_prompt + "\nUser: " + request.prompt + ":"
+
     system_prompt = f"""
         I want you to act like {request.persona}. I want you to respond and answer like {request.persona},
-        using the tone, manner and vocabulary {request.persona} would use. 
+        using the tone, manner and vocabulary {request.persona} would use.
         You must know all of the knowledge of {request.persona}.
 
         The status of you is as follows:
         Location: Poland
-    
+
         The interactions are as follows:
-        """
+        {conversation_history}
+        Now, this is a new message from user: {request.prompt}:
+    """
+
     full_prompt = system_prompt + "\nUser: " + request.prompt + ":"
-    # Tokenize input
+
     inputs = tokenizer(full_prompt, return_tensors="pt")
 
     # Generate output
@@ -152,6 +176,14 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
         outputs[0][inputs["input_ids"].shape[1]:],
         skip_special_tokens=True
     )
+
+    # Generate the vector (embedding) for the generated text (use model's embedding layer)
+    inputs_for_vector = tokenizer(generated_text, return_tensors="pt")
+    vector = model.encode(inputs_for_vector['input_ids']).detach().numpy().flatten()  # Generate the embedding
+    vector = vector.tolist()  # Convert to list to save to Qdrant
+
+    # Save the generated message (or raw token output if desired) to Qdrant
+    save_message_to_qdrant(request.conversation_id, SenderType.BOT, generated_text, vector)
 
     await save_message(request.conversation_id, SenderType.BOT, generated_text)
     return generated_text
