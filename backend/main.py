@@ -1,8 +1,9 @@
 import os
 import sys
 
-from fastapi import Depends, HTTPException, Header
+from fastapi import Depends
 
+from backend.db import User
 
 # sys.path.append(os.path.join(os.path.dirname(__file__), '../security'))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -11,10 +12,9 @@ from dotenv import load_dotenv
 from huggingface_hub import login
 import json
 from pydantic import BaseModel
-from security.app import app
-from security.users import current_active_user
-from security.db import SenderType, User
-from backend.quadrant_db_interactions import *
+from backend.app import app
+from backend.users import current_active_user
+from backend.qdrant_interactions import *
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import uuid
@@ -28,7 +28,7 @@ from backend.database_interactions import (
 )
 
 
-load_dotenv()
+load_dotenv('./env/.env')
 
 
 # login to HF
@@ -190,5 +190,5 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=8000, ssl_keyfile="env/key.pem", ssl_certfile="env/cert.pem")
     print(app.routes)

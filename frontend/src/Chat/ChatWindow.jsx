@@ -33,7 +33,7 @@ const ChatWindow = () => {
     }
     
     // GET OR CREATE PERSONA AND RETURN ITS ID
-    fetch("http://localhost:8000/api/add_persona", {
+    fetch("https://localhost:8000/api/add_persona", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -69,7 +69,7 @@ const ChatWindow = () => {
 
     (async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/chat_history', {
+        const res = await fetch('https://localhost:8000/api/chat_history', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ const ChatWindow = () => {
       setPendingPrompt(null);
       console.log("Prompt:", prompt);
       // send to your get_answer endpoint
-      const res = await fetch('http://localhost:8000/api/get_answer', {
+      const res = await fetch('https://localhost:8000/api/get_answer', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
