@@ -10,7 +10,6 @@ export default defineConfig({
       key: fs.readFileSync('../backend/env/key.pem'),
       cert: fs.readFileSync('../backend/env/cert.pem'),
     },
-    host: 'localhost',
-    port: 5137,
+    host: 'localhost'
   },
 })
