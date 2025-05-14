@@ -12,10 +12,10 @@ function App() {
       <Routes>
         <Route element={<MainLayout />}>
           <Route path="/" element={<Menu />} />
-          {/* <Route path="/ChatWindow/:persona_name" element={<ChatWindow />} /> */}
+          <Route path="/ChatWindow/:persona_name" element={<ChatWindow />} />
+          <Route path="/auth" element={<Auth />} />
         </Route>
 
-        <Route path="/auth" element={<Auth />} />
         <Route path="/oauth/callback/*" element={<Auth />} />
       </Routes>
     </Router>

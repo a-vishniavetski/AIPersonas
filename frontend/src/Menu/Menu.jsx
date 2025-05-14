@@ -49,16 +49,17 @@ function Menu() {
 
     return (
         <>
-            <div className="content">
-                {/* Add Auth Button */}
-                    <Link to="/auth">
+            <div className="menu-container">
+                    {/* <Link to="/auth">
                         <button className="bg-blue-500 text-white p-2 rounded mt-2 mr-2">
                             Go to Auth Page
                         </button>
-                    </Link>
+                    </Link> */}
+
                 <div className="header-text">
                     <h1>Choose your character!</h1>
                 </div>
+
                 <div className="personas-list">
                     {personas.map((persona) =>  (
                         <Link key={persona.name} to={`/ChatWindow/${persona.name}`} className="persona-card">

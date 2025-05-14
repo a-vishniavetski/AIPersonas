@@ -4,7 +4,7 @@ body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: monospace;
+  /* font-family: monospace; */
   background-color: #0d0d0d;
   color: #00ff99;
 }
@@ -15,9 +15,9 @@ body, html {
   min-height: 100vh;
   background-color: #0d0d0d; /* dark background */
   color: #00ff99; /* neon green cyberpunk text */
+  align-items: stretch;
 }
 
-.main-header,
 .main-footer {
   padding: 1rem;
   border: 1px solid #00ff99;
