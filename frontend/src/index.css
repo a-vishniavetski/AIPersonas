@@ -13,6 +13,20 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+@font-face {
+  font-family: "WeirdCoolCyberpunk";
+  src: url('src/assets/fonts/cubic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+} 
+
+@font-face {
+  font-family: "Batman";
+  src: url('src/assets/fonts/batmfa__.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
@@ -22,30 +36,27 @@ a:hover {
   color: #535bf2;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  padding: 16px;
+  background: rgba(255, 0, 0, 0.842); /* translucent red */
+  border: 1px solid rgba(255, 100, 100, 0.5);
+  color: red;
+  backdrop-filter: blur(8px); /* acrylic effect */
+  -webkit-backdrop-filter: blur(8px); /* for Safari */
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
 }
+
 button:hover {
   border-color: #646cff;
 }
@@ -54,15 +65,3 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
