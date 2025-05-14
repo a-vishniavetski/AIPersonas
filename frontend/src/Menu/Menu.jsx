@@ -3,15 +3,15 @@ import { Link } from 'react-router-dom';
 import "./Menu.css";
 
 const personas = [
-  { name: 'Cleopatra', image: 'src/Menu/personas_photos/cleopatra.png' },
-  { name: 'Beethoven', image: 'src/Menu/personas_photos/beethoven.png' },
-  { name: 'Caesar', image: 'src/Menu/personas_photos/caesar.png' },
-  { name: 'Hermione', image: 'src/Menu/personas_photos/hermione.png' },
-  { name: 'Martin', image: 'src/Menu/personas_photos/martin.png' },
-  { name: 'Newton', image: 'src/Menu/personas_photos/newton.png' },
-  { name: 'Socrates', image: 'src/Menu/personas_photos/socrates.png' },
-  { name: 'Spartacus', image: 'src/Menu/personas_photos/spartacus.png' },
-  { name: 'Voldemort', image: 'src/Menu/personas_photos/voldemort.png' },
+  { name: 'Cleopatra', image: 'src/assets/personas/cleopatra.png' },
+  { name: 'Beethoven', image: 'src/assets/personas/beethoven.png' },
+  { name: 'Caesar', image: 'src/assets/personas/caesar.png' },
+  { name: 'Hermione', image: 'src/assets/personas/hermione.png' },
+  { name: 'Martin', image: 'src/assets/personas/martin.png' },
+  { name: 'Newton', image: 'src/assets/personas/newton.png' },
+  { name: 'Socrates', image: 'src/assets/personas/socrates.png' },
+  { name: 'Spartacus', image: 'src/assets/personas/spartacus.png' },
+  { name: 'Voldemort', image: 'src/assets/personas/voldemort.png' },
 ];
 
 
@@ -67,7 +67,7 @@ function Menu() {
                         </Link>
                     ))}
                     <Link to="AddPersona" className="persona-card">
-                        <img src="src/Menu/personas_photos/plus.png" alt="Add Persona" />
+                        <img src="src/assets/personas/plus.png" alt="Add Persona" />
                         <div className='persona-name'>Add Persona</div>
                     </Link>
                     
