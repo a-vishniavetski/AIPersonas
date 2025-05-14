@@ -1,0 +1,34 @@
+/* layout.css */
+
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: monospace;
+  background-color: #0d0d0d;
+  color: #00ff99;
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #0d0d0d; /* dark background */
+  color: #00ff99; /* neon green cyberpunk text */
+}
+
+.main-header,
+.main-footer {
+  padding: 1rem;
+  border: 1px solid #00ff99;
+  background-color: #101010;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}

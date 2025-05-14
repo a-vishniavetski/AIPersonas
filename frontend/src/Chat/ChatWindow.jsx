@@ -131,7 +131,8 @@ const ChatWindow = () => {
   // ——— on form submit, push user message and trigger pendingPrompt ———
   const handleSubmit = e => {
     e.preventDefault();
-    if (!input.trim() || !token) return;
+    if (!input.trim()) return;
+    // if (!token) return;
 
     // add user’s message
     setMessages(msgs => [...msgs, { text: input, sender: 'user' }]);
