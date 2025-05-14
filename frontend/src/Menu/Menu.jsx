@@ -57,7 +57,7 @@ function Menu() {
                     </Link> */}
 
                 <div className="header-text">
-                    <h1>Choose your character!</h1>
+                    <h1 style={{ fontFamily: 'Batman' }}>Choose your character!</h1>
                 </div>
 
                 <div className="personas-list">

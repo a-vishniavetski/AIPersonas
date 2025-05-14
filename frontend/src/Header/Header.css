@@ -1,7 +1,7 @@
 .header {
   display: flex;
   flex-direction: row;
-  justify-content: start;
+  justify-content: space-between;
   padding: 1rem;
   border: 1px solid #00ff99;
   background-color: #101010;
@@ -10,6 +10,17 @@
   letter-spacing: 1px;
 }
 
-.header button {
-    
+.nav-bar {
+  display: flex;
+  gap: 1rem; /* spacing between buttons */
+  align-items: center;
+}
+
+
+
+.main-header-text {
+    font-family: 'WeirdCoolCyberpunk';
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+    font-size: 2.5rem;
+    color: red;
 }

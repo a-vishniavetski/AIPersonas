@@ -12,6 +12,10 @@ function Header() {
           <button className="nav-button">Auth</button>
         </Link>
       </nav>}
+
+    <div className="main-header-text">
+        AI Personas
+    </div>
     </header>
   );
 }
