@@ -3,7 +3,6 @@
 import json
 import torch
 import requests
-import numpy as np
 from transformers import AutoTokenizer, AutoModel
 from langchain_community.llms import Ollama
 from langchain.chains import RetrievalQA

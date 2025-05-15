@@ -8,7 +8,7 @@ const Auth = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/auth/google/authorize",
+        "https://localhost:8000/auth/google/authorize",
         {
           method: "GET",
           headers: {
@@ -36,7 +36,7 @@ const Auth = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/authenticated-route",
+        "https://localhost:8000/authenticated-route",
         {
           method: "GET",
           headers: {
@@ -66,7 +66,7 @@ const Auth = () => {
       const query = window.location.search;
       // alert("Received callback with query: " + query);
 
-      fetch("http://localhost:8000/auth/google/callback" + query, {
+      fetch("https://localhost:8000/auth/google/callback" + query, {
         method: "GET",
         credentials: "include",
       })

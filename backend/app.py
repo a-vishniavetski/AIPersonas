@@ -1,15 +1,13 @@
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
-from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-from starlette.requests import Request 
 from starlette.middleware.sessions import SessionMiddleware
 
-from security.db import User, create_db_and_tables
-from security.schemas import UserCreate, UserRead, UserUpdate
-from security.users import (
+from db import User, create_db_and_tables
+from schemas import UserCreate, UserRead, UserUpdate
+from users import (
     SECRET,
     auth_backend,
     current_active_user,
@@ -29,7 +27,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["https://localhost:5173", "https://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -70,7 +68,7 @@ app.include_router(
         google_oauth_client,
         auth_backend,
         SECRET,
-        redirect_url="http://localhost:5173/oauth/callback"
+        redirect_url="https://localhost:5173/oauth/callback"
     ),
     prefix="/auth/google",
     tags=["auth"],

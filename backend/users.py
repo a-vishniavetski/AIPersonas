@@ -14,14 +14,14 @@ from fastapi_users.authentication import (
 from fastapi_users.db import SQLAlchemyUserDatabase
 from httpx_oauth.clients.google import GoogleOAuth2
 
-from security.db import User, get_user_db
+from backend.db import User, get_user_db
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 SECRET = "SECRET"
 
-with open(os.path.join(os.path.dirname(__file__), "google_oauth_client.json")) as f:
+with open(os.path.join(os.path.dirname(__file__), "env/google_oauth_client.json")) as f:
     secrets = json.load(f)
 
 client_id = secrets["web"]["client_id"]

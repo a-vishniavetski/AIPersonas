@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from security.db import Conversations, Messages, Personas, engine
-import uuid
+
+from backend.db import Conversations, engine, Personas, Messages
 
 
 # Async version for async contexts
@@ -10,7 +10,7 @@ async def insert_persona_and_conversation(user_id, pers_name, descr):
         persona = await get_persona(user_id, pers_name, descr, session)
         conversation = await get_conversation(user_id, persona.id, session)
         return persona.id, conversation.id
-        
+
 
 async def get_persona(user_id, pers_name, descr, session):
     async with session:
@@ -21,7 +21,7 @@ async def get_persona(user_id, pers_name, descr, session):
         print(existing_persona is not None, existing_persona, user_id, pers_name, descr)
         if existing_persona:
             return existing_persona
-    
+
         # If not found, create new persona
         new_persona = Personas(user_id=user_id, name=pers_name, description=descr)
         session.add(new_persona)
@@ -45,7 +45,7 @@ async def get_conversation(user_id, persona_id, session):
         await session.commit()
         await session.refresh(new_conversation)
         return new_conversation
-    
+
 
 async def save_message(conversation_id, sender, content):
     async with AsyncSession(engine) as session:
@@ -54,7 +54,7 @@ async def save_message(conversation_id, sender, content):
         await session.commit()
         await session.refresh(new_message)
         return new_message
-    
+
 
 async def get_messages_from_conversation(conversation_id):
     async with AsyncSession(engine) as session:
@@ -62,7 +62,8 @@ async def get_messages_from_conversation(conversation_id):
         result = await session.execute(query)
         messages = result.scalars().all()
         return [{"text": msg.content, "sender": msg.sender} for msg in messages]
-    
+
+
 async def get_all_user_personas(user_id):
     async with AsyncSession(engine) as session:
         query = select(Personas).filter_by(user_id=user_id)

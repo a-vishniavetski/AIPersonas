@@ -1,11 +1,14 @@
-from qdrant_client import QdrantClient
 import uuid
-import numpy as np
 
+from dotenv import load_dotenv
+from qdrant_client import QdrantClient
+import os
+
+load_dotenv('./env/.env')
 
 qdrant_client = QdrantClient(
     url="https://91dcb42b-7324-423c-9272-a469314e87b0.europe-west3-0.gcp.cloud.qdrant.io:6333",
-    api_key="insert here your API key",
+    api_key=os.getenv("qdrant_key"),
 
 )
 
