@@ -1,7 +1,7 @@
 import "./App.css";
 import ChatWindow from "./Chat/ChatWindow.jsx";
 import Menu from "./Menu/Menu.jsx";
-import Auth from "./Auth/Auth.jsx";
+import Auth from "./Auth/AuthButton.jsx";
 import MainLayout from "./layouts/MainLayout.jsx"
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
