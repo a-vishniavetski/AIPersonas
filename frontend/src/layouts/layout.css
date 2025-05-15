@@ -6,7 +6,7 @@ body, html {
   height: 100%;
   /* font-family: monospace; */
   background-color: #0d0d0d;
-  color: #00ff99;
+  color: var(--default-blue-neon);
 }
 
 .main-layout {
@@ -14,13 +14,13 @@ body, html {
   flex-direction: column;
   min-height: 100vh;
   background-color: #0d0d0d; /* dark background */
-  color: #00ff99; /* neon green cyberpunk text */
+  color: var(--default-blue-neon);
   align-items: stretch;
 }
 
 .main-footer {
   padding: 1rem;
-  border: 1px solid #00ff99;
+  border: 1px solid var(--default-blue-neon);
   background-color: #101010;
   text-align: center;
   font-weight: bold;

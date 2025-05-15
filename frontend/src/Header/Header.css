@@ -3,7 +3,7 @@
   flex-direction: row;
   justify-content: space-between;
   padding: 1rem;
-  border: 1px solid #00ff99;
+  border: 1px solid var(--default-blue-neon);
   background-color: #101010;
   text-align: center;
   font-weight: bold;

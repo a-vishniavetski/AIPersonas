@@ -27,14 +27,19 @@
   font-style: normal;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+:root {
+  --default-blue-neon: #00eaff;
+  --default-greenish-neon: #00ff99;
+  --violet-neon: #646cff;
 }
-a:hover {
-  color: #535bf2;
+
+.text-neon-glow-light {
+  text-shadow:
+    0 0 4px var(--default-blue-neon),
+    0 0 8px var(--default-blue-neon),
+    0 0 16px #fff;
 }
+
 
 h1 {
   font-size: 3.2em;
