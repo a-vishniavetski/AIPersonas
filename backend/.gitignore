@@ -75,6 +75,8 @@ celerybeat-schedule
 
 # dotenv
 env/.env
+env/cert.pem
+env/key.pem
 
 # virtualenv
 venv/
