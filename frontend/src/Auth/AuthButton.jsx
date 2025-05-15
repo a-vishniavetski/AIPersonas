@@ -45,17 +45,17 @@ const AuthButton = () => {
         })
         .catch(console.error);
     }
-  }, [location]);
+  }, [location, navigate]);
 
   return (
     <div className="flex gap-2">
       {localStorage.getItem("token") ? (
-        <button onClick={handleAuthTest} className="bg-green-500 text-white px-4 py-2 rounded">
+        <button onClick={handleAuthTest}>
           Test Auth
         </button>
       ) : (
-        <button onClick={handleOAuth} className="bg-blue-500 text-white px-4 py-2 rounded">
-          Login with Google
+        <button onClick={handleOAuth}>
+          Login (Google)
         </button>
       )}
     </div>
