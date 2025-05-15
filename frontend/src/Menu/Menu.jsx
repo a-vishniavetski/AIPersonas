@@ -1,6 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import "./Menu.css";
+import LoginModal from '../Auth/LoginModal/LoginModal';
 
 const personas = [
   { name: 'Cleopatra', image: 'src/assets/personas/cleopatra.png' },
@@ -14,31 +15,45 @@ const personas = [
   { name: 'Voldemort', image: 'src/assets/personas/voldemort.png' },
 ];
 
-
 function Menu() {
-    return (
-        <>
-            <div className="menu-container">
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const navigate = useNavigate();
 
-                <div className="header-text">
-                    <h1 style={{ fontFamily: 'Batman' }}>Choose your character!</h1>
-                </div>
+  const handlePersonaClick = (personaName) => {
+    if (!localStorage.getItem('token')) {
+      setShowLoginModal(true);
+    } else {
+      navigate(`/ChatWindow/${personaName}`);
+    }
+  };
 
-                <div className="personas-list">
-                    {personas.map((persona) =>  (
-                        <Link key={persona.name} to={`/ChatWindow/${persona.name}`} className="persona-card">
-                            <img src={persona.image} alt={persona.name} />
-                            <div className='persona-name'>{persona.name}</div>
-                        </Link>
-                    ))}
-                    <Link to="AddPersona" className="persona-card">
-                        <img src="src/assets/personas/plus.png" alt="Add Persona" />
-                        <div className='persona-name'>Add Persona</div>
-                    </Link>
-                </div>
-            </div>
-        </>
-    );
+  return (
+    <div className="menu-container">
+      <div className="header-text">
+        <h1 style={{ fontFamily: 'Batman' }}>Choose your character!</h1>
+      </div>
+
+      <div className="personas-list">
+        {personas.map((persona) => (
+          <div
+            key={persona.name}
+            className="persona-card cursor-pointer"
+            onClick={() => handlePersonaClick(persona.name)}
+          >
+            <img src={persona.image} alt={persona.name} />
+            <div className="persona-name">{persona.name}</div>
+          </div>
+        ))}
+        <Link to="/AddPersona" className="persona-card">
+          <img src="src/assets/personas/plus.png" alt="Add Persona" />
+          <div className="persona-name">Add Persona</div>
+        </Link>
+      </div>
+
+      {/* Modal rendered outside of the menu-container */}
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+    </div>
+  );
 }
 
 export default Menu;
