@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRef } from 'react';
 import {Link, useParams} from "react-router-dom";
 import './ChatWindow.css';
+import { Input, Button } from '@headlessui/react'
 
 const ChatWindow = () => {
   const [messages, setMessages] = useState([]);
@@ -23,10 +24,6 @@ const ChatWindow = () => {
     if (didRunOnce.current) return; // Prevents the effect from running again
     didRunOnce.current = true; // Set the flag to true after the first run
 
-    if (!token) {
-      alert("You must be logged in to send messages");
-      return;
-    }
     if (!persona_name) {
       alert("You must select a persona to send messages");
       return;
@@ -49,14 +46,9 @@ const ChatWindow = () => {
     .then(res => res.json())
     .then(data => {
       console.log("Persona ID:", data.persona_id);
-      // You can store persona_id if needed
       setPersonaId(data.persona_id);
       setUserId(data.user_id);
       setConversationId(data.conversation_id);
-      // console.log("Conversation ID:", conversationId);
-      // console.log("User ID:", userId);
-      // console.log("Persona ID:", personaId);
-      // console.log("Persona name:", persona_name);
     })
     .catch(err => console.error("Persona creation failed:", err));
   }, [token, persona_name]);
@@ -147,25 +139,26 @@ const ChatWindow = () => {
   }, [messages]);
 
   return (
-    <div className="chatbot-container">
-      {/* Chatbot window */}
-      <div className="chatbot-window">
-        <div className="chatbot-header">
-          <h3>Chatbot</h3>
-        </div>
-        <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
-          {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >{message.text}
+    <div className="chatwindow-container">
+      <div className="persona-dialog">
+          <div className="persona-header">
+            <h3>{ persona_name }</h3>
           </div>
-          ))}
-          <div ref={messagesEndRef} />
+
+          <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
+            {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >{message.text}
+            </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <form className="persona-input" onSubmit={handleSubmit}>
+            <Input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
+            />
+            <Button type="submit">↑</Button>
+          </form>
         </div>
-        <form className="chatbot-input" onSubmit={handleSubmit}>
-          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
-          />
-          <button type="submit">↑</button>
-        </form>
       </div>
-    </div>
   );
 };
 

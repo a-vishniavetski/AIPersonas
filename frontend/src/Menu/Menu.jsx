@@ -26,6 +26,13 @@ function Menu() {
       navigate(`/ChatWindow/${personaName}`);
     }
   };
+  const handleAddPersonaClick = () => {
+    if (!localStorage.getItem('token')) {
+      setShowLoginModal(true);
+    } else {
+      navigate(`/AddPersona`);
+    }
+  };
 
   return (
     <div className="menu-container">
@@ -44,10 +51,13 @@ function Menu() {
             <div className="persona-name">{persona.name}</div>
           </div>
         ))}
-        <Link to="/AddPersona" className="persona-card">
-          <img src="src/assets/personas/plus.png" alt="Add Persona" />
-          <div className="persona-name">Add Persona</div>
-        </Link>
+        <div
+          className="persona-card cursor-pointer"
+          onClick={handleAddPersonaClick}
+        >
+            <img src="src/assets/personas/plus.png" alt="Add Persona" />
+            <div className="persona-name">Add Persona</div>
+        </div>
       </div>
 
       {/* Modal rendered outside of the menu-container */}
