@@ -38,7 +38,7 @@ function Menu() {
   return (
     <div className="menu-container">
       <div className="header-text">
-        <h2>Choose your character!</h2>
+        <h2 className='typing'>Choose your character!</h2>
       </div>
 
       <div className="personas-list">

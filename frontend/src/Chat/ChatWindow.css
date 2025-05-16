@@ -16,19 +16,19 @@
 
   width: 40vw;
 
-  background-color: rgba(139, 139, 139, 0.35);
-  box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+  border-radius: 20px;
+  border: 1px solid white;
+
+  background-color: rgb(255, 255, 255, 0.1);
   backdrop-filter: blur( 1px );
   -webkit-backdrop-filter: blur( 1px );
-  border-radius: 20px;
-  border: 1px solid var(--frostbite);
 }
 
 .persona-header {
   padding: 5px;
   padding-left: 15px;
   padding-right: 15px;
-  border-bottom: 1px solid var(--frostbite);
+  border-bottom: 1px solid white;
   border-radius: 13px;
   flex-grow: 0;
   display: flex;
@@ -41,13 +41,13 @@
   width: 50px;
   height: 50px;
   border-radius: 20%;
-  border: 1px solid var(--frostbite);
+  border: 1px solid red;
   object-fit: cover;
   transition: all 0.3s ease;
 }
 
 .persona-title {
-  color: var(--frostbite)
+  color: var(red);
 }
 
 .chatbot-messages {
@@ -64,10 +64,10 @@
   margin: 5px 0;
   padding: 8px 12px;
   border-radius: 20px;
-  border: 1px solid var(--frostbite);
+  border: 1px solid var(--cool-violet);
   max-width: 80%;
   overflow-wrap: break-word;
-  color: var(--frostbite);
+  color: var(red);
   text-align: left;
 }
 
@@ -81,7 +81,7 @@
 
 .persona-input {
   padding: 10px;
-  border-top: 1px solid var(--frostbite);
+  border-top: 1px solid white;
   border-radius: 13px;
   display: flex;
   gap: 10px;
@@ -91,10 +91,10 @@
 .persona-input input {
   flex: 1;
   padding: 5px;
-  border: 1px solid var(--frostbite);
+  border: 1px solid white;
   border-radius: 15px;
   background-color: transparent;
-  color: var(--frostbite);
+  color: red;
   font-family: inherit;
 }
 
@@ -103,7 +103,7 @@
 }
 
 .persona-input input::placeholder{
-  color: var(--frostbite);
+  color: white;
   opacity: 0.5;
 }
 
@@ -117,12 +117,14 @@
 
 .persona-input button {
   padding: 5px 15px;
-  border: 1px solid var(--frostbite);
-  color: var(--frostbite);
+  border: 1px solid white;
+  color: white;
   background-color: transparent;
   border-radius: 30px;
   cursor: pointer;
   font-size: 23px;
+  backdrop-filter: none;
+  box-shadow: none;
 }
 
 .persona-input button:hover {

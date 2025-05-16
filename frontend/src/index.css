@@ -42,6 +42,7 @@
   --keppel: #1ac5b0;
   --electric-blue: #37ebf3;
   --blushing-purple: #9370db;
+  --cool-violet: #646cff;
   --frostbite: #e455ae;
   --steel-pink: #cb1dcd;
   --pale-silver: #d1c5c0;
@@ -88,5 +89,20 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+.typing {
+  white-space: nowrap;
+  overflow: hidden;
+  animation: typing 2s steps(30), blink 0.5s step-end infinite alternate;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 23ch }
+}
+
+@keyframes blink {
+  50% { border-color: transparent }
 }
 

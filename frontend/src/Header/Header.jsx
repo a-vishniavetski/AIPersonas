@@ -12,7 +12,9 @@ function Header() {
         <AuthButton />
       </nav>}
     <div className="main-header-text">
-        AI Personas
+         <Link to="/" className="main-header-text">
+          AI Personas
+        </Link>
     </div>
     </header>
   );
