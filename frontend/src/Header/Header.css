@@ -3,8 +3,8 @@
   flex-direction: row;
   justify-content: space-between;
   padding: 1rem;
-  border: 1px solid var(--default-blue-neon);
-  background-color: #101010;
+  border: 1px solid var(--blood-red);
+  /* background-color: #101010; */
   text-align: center;
   font-weight: bold;
   letter-spacing: 1px;
@@ -19,8 +19,8 @@
 
 
 .main-header-text {
-    font-family: 'WeirdCoolCyberpunk';
-    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+    /* font-family: 'WeirdCoolCyberpunk'; */
+    text-shadow: 0 2px 4px var(--blood-red);
     font-size: 2.5rem;
     color: red;
 }

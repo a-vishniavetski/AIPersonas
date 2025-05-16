@@ -4,24 +4,28 @@ body, html {
   margin: 0;
   padding: 0;
   height: 100%;
-  /* font-family: monospace; */
-  background-color: #0d0d0d;
-  color: var(--default-blue-neon);
+  color: var(--blood-red);
+
+  background-image: url("../assets/images/wall.jpeg") ;
+  background-size: cover;
+
+  /* Our cool main font */
+  font-family: "Share Tech Mono", monospace;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .main-layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #0d0d0d; /* dark background */
-  color: var(--default-blue-neon);
+  color: red;
   align-items: stretch;
 }
 
 .main-footer {
   padding: 1rem;
-  border: 1px solid var(--default-blue-neon);
-  background-color: #101010;
+  border: 1px solid var(--blood-red);
   text-align: center;
   font-weight: bold;
   letter-spacing: 1px;

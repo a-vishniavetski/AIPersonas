@@ -16,15 +16,38 @@
 
   width: 40vw;
 
-  border: 1px solid var(--violet-neon);
+  background-color: rgba(139, 139, 139, 0.35);
+  box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+  backdrop-filter: blur( 1px );
+  -webkit-backdrop-filter: blur( 1px );
   border-radius: 20px;
+  border: 1px solid var(--frostbite);
 }
 
 .persona-header {
   padding: 5px;
-  border-bottom: 1px solid var(--violet-neon);
+  padding-left: 15px;
+  padding-right: 15px;
+  border-bottom: 1px solid var(--frostbite);
   border-radius: 13px;
   flex-grow: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.persona-header img {
+  width: 50px;
+  height: 50px;
+  border-radius: 20%;
+  border: 1px solid var(--frostbite);
+  object-fit: cover;
+  transition: all 0.3s ease;
+}
+
+.persona-title {
+  color: var(--frostbite)
 }
 
 .chatbot-messages {
@@ -41,25 +64,24 @@
   margin: 5px 0;
   padding: 8px 12px;
   border-radius: 20px;
-  border: 1px solid var(--violet-neon);
+  border: 1px solid var(--frostbite);
   max-width: 80%;
   overflow-wrap: break-word;
+  color: var(--frostbite);
+  text-align: left;
 }
 
 .user-message {
-  color: white;
   margin-left: auto;
-  text-align: right;
 }
 
 .bot-message {
-  color: white;
   margin-right: auto;
 }
 
 .persona-input {
   padding: 10px;
-  border-top: 1px solid var(--violet-neon);
+  border-top: 1px solid var(--frostbite);
   border-radius: 13px;
   display: flex;
   gap: 10px;
@@ -69,10 +91,11 @@
 .persona-input input {
   flex: 1;
   padding: 5px;
-  border: 1px solid var(--violet-neon);
+  border: 1px solid var(--frostbite);
   border-radius: 15px;
   background-color: transparent;
-  color: white
+  color: var(--frostbite);
+  font-family: inherit;
 }
 
 .persona-input input:focus {
@@ -80,22 +103,22 @@
 }
 
 .persona-input input::placeholder{
-  color: var(--violet-neon);
+  color: var(--frostbite);
   opacity: 0.5;
 }
 
 .persona-input input[data-hover] {
-  border-color: var(--default-blue-neon);
+  border-color: var(--steel-pink);
 }
 
 .persona-input input[data-focus] {
-  border-color: var(--default-blue-neon);
+  border-color: var(--steel-pink);
 }
 
 .persona-input button {
   padding: 5px 15px;
-  border: 1px solid var(--default-blue-neon);
-  color: var(--default-blue-neon);
+  border: 1px solid var(--frostbite);
+  color: var(--frostbite);
   background-color: transparent;
   border-radius: 30px;
   cursor: pointer;
@@ -103,6 +126,6 @@
 }
 
 .persona-input button:hover {
-  color: var(--default-greenish-neon);
-  border: 1px solid var(--default-greenish-neon);
+  color: var(--steel-pink);
+  border: 1px solid var(--steel-pink);
 }

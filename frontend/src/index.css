@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -5,7 +7,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* background-color: #242424; */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -29,9 +31,20 @@
 
 :root {
   --default-blue-neon: #00eaff;
+  --blue-neon-rgb: 0, 234, 255;
   --pale-blue-neon: #76f4ff;
   --default-greenish-neon: #00ff99;
   --violet-neon: #646cff;
+
+  --raisin-black: #272932;
+  --blood-red: #710000;
+  --rich-lemon: #fdf500;
+  --keppel: #1ac5b0;
+  --electric-blue: #37ebf3;
+  --blushing-purple: #9370db;
+  --frostbite: #e455ae;
+  --steel-pink: #cb1dcd;
+  --pale-silver: #d1c5c0;
 }
 
 .text-neon-glow-light {
@@ -41,6 +54,11 @@
     0 0 16px #fff;
 }
 
+.share-tech-mono-regular {
+  font-family: "Share Tech Mono", monospace;
+  font-weight: 400;
+  font-style: normal;
+}
 
 h1 {
   font-size: 3.2em;

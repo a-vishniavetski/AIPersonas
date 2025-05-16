@@ -142,9 +142,9 @@ const ChatWindow = () => {
     <div className="chatwindow-container">
       <div className="persona-dialog">
           <div className="persona-header">
-            <h3>{ persona_name }</h3>
+            <img src={`/personas/${persona_name.toLowerCase()}.png`} alt={persona_name} />
+            <h3 className='persona-title'>{ persona_name }</h3>
           </div>
-
           <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
             {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >{message.text}
             </div>
@@ -153,7 +153,7 @@ const ChatWindow = () => {
           </div>
 
           <form className="persona-input" onSubmit={handleSubmit}>
-            <Input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
+            <Input autoComplete="off" type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
             />
             <Button type="submit">↑</Button>
           </form>

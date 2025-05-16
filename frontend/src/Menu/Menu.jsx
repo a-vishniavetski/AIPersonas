@@ -20,11 +20,12 @@ function Menu() {
   const navigate = useNavigate();
 
   const handlePersonaClick = (personaName) => {
-    if (!localStorage.getItem('token')) {
-      setShowLoginModal(true);
-    } else {
-      navigate(`/ChatWindow/${personaName}`);
-    }
+    // if (!localStorage.getItem('token')) {
+    //   setShowLoginModal(true);
+    // } else {
+    //   navigate(`/ChatWindow/${personaName}`);
+    // }
+    navigate(`/ChatWindow/${personaName}`);
   };
   const handleAddPersonaClick = () => {
     if (!localStorage.getItem('token')) {
@@ -37,7 +38,7 @@ function Menu() {
   return (
     <div className="menu-container">
       <div className="header-text">
-        <h1 style={{ fontFamily: 'Batman' }}>Choose your character!</h1>
+        <h2>Choose your character!</h2>
       </div>
 
       <div className="personas-list">
@@ -47,7 +48,7 @@ function Menu() {
             className="persona-card cursor-pointer"
             onClick={() => handlePersonaClick(persona.name)}
           >
-            <img src={persona.image} alt={persona.name} />
+            <img src={`/personas/${persona.name.toLowerCase()}.png`} alt={persona.name} />
             <div className="persona-name">{persona.name}</div>
           </div>
         ))}
@@ -55,7 +56,7 @@ function Menu() {
           className="persona-card cursor-pointer"
           onClick={handleAddPersonaClick}
         >
-            <img src="src/assets/personas/plus.png" alt="Add Persona" />
+            <img src="/personas/plus.png" alt="Add Persona" />
             <div className="persona-name">Add Persona</div>
         </div>
       </div>
