@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import {Link, useParams} from "react-router-dom";
 import './ChatWindow.css';
 import { Input, Button } from '@headlessui/react'
+import { motion } from 'framer-motion';
 
 const ChatWindow = () => {
   const [messages, setMessages] = useState([]);
@@ -139,8 +140,13 @@ const ChatWindow = () => {
   }, [messages]);
 
   return (
-    <div className="chatwindow-container">
-      <div className="persona-dialog">
+    <motion.div className="chatwindow-container">
+      <div 
+         initial={{ opacity: 0 }}
+         animate={{ opacity: 1 }}
+         exit={{ opacity: 0 }}
+         transition={{ duration: 1 }}
+         className="persona-dialog">
           <div className="persona-header">
             <img src={`/personas/${persona_name.toLowerCase()}.png`} alt={persona_name} />
             <h3 className='persona-title'>{ persona_name }</h3>
@@ -158,7 +164,7 @@ const ChatWindow = () => {
             <Button type="submit">↑</Button>
           </form>
         </div>
-      </div>
+      </motion.div>
   );
 };
 
