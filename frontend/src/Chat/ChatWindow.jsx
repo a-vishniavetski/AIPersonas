@@ -4,6 +4,7 @@ import {Link, useParams} from "react-router-dom";
 import './ChatWindow.css';
 import { Input, Button } from '@headlessui/react'
 import { motion } from 'framer-motion';
+import { downloadPDFConversation } from './ChatWindowsApi';
 
 // Placeholder until description is fetched from backend
 const loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ";
@@ -24,6 +25,22 @@ const ChatWindow = () => {
   const token = localStorage.getItem("token");
 
   const didRunOnce = React.useRef(false);  // flag for React development behavior (useEffect runs twice in dev, but we don't want that)
+
+  const handleExportToPdf = () => {
+    if (conversationId) {
+      downloadPDFConversation(conversationId, token)
+        .catch(error => {
+          console.error('Error downloading PDF:', error);
+          // Handle error (show notification to user, etc.)
+          window.alert('Failed to download PDF. Please try again later.');
+        });
+    } else {
+      console.error('No conversation ID available');
+      // Handle case where conversation ID is not available
+      window.alert("Can't download PDF right now. Please try again later.");
+    }
+  };
+
   useEffect(() => {
     if (didRunOnce.current) return; // Prevents the effect from running again
     didRunOnce.current = true; // Set the flag to true after the first run
@@ -173,7 +190,7 @@ const ChatWindow = () => {
         </form>
       </div>
       <div className="persona-settings">
-        <Button className="button persona-settings-button">Export to PDF</Button>
+        <Button className="button persona-settings-button" onClick={handleExportToPdf}>Export to PDF</Button>
         <Button className="button persona-settings-button">Clear chat (?)</Button>
         <Button className="button persona-settings-button">Change persona (?)</Button>
       </div>
