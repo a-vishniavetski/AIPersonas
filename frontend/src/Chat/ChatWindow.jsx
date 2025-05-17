@@ -5,6 +5,9 @@ import './ChatWindow.css';
 import { Input, Button } from '@headlessui/react'
 import { motion } from 'framer-motion';
 
+// Placeholder until description is fetched from backend
+const loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ";
+
 const ChatWindow = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -140,30 +143,41 @@ const ChatWindow = () => {
   }, [messages]);
 
   return (
-    <motion.div className="chatwindow-container">
-      <div 
-         initial={{ opacity: 0 }}
-         animate={{ opacity: 1 }}
-         exit={{ opacity: 0 }}
-         transition={{ duration: 1 }}
-         className="persona-dialog">
-          <div className="persona-header">
-            <img src={`/personas/${persona_name.toLowerCase()}.png`} alt={persona_name} />
-            <h3 className='persona-title'>{ persona_name }</h3>
-          </div>
-          <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
-            {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >{message.text}
-            </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          <form className="persona-input" onSubmit={handleSubmit}>
-            <Input autoComplete="off" type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
-            />
-            <Button type="submit">↑</Button>
-          </form>
+    <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 1 }}
+        className="chatwindow-container"
+        >
+      <div className="persona-description glass-panel">
+        <div className="description-header">Description</div>
+        <div className="description-body">{loremIpsum}</div>
+      </div>
+      <div className="persona-dialog glass-panel">
+        <div className="persona-header">
+          <img src={`/personas/${persona_name.toLowerCase()}.png`} alt={persona_name} />
+          <h3 className='persona-title'>{ persona_name }</h3>
         </div>
+        <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
+          {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >{message.text}
+          </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <form className="persona-input" onSubmit={handleSubmit}>
+          <Input autoComplete="off" type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
+          />
+          <Button type="submit">↑</Button>
+        </form>
+      </div>
+      <div className="persona-settings">
+        <Button className="button persona-settings-button">Export to PDF</Button>
+        <Button className="button persona-settings-button">Clear chat (?)</Button>
+        <Button className="button persona-settings-button">Change persona (?)</Button>
+      </div>
+
       </motion.div>
   );
 };

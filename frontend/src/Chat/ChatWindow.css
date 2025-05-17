@@ -5,8 +5,17 @@
 
   display: flex;
   flex-direction: row;
-  align-items: center;
   justify-content: center;
+
+  gap:40px;
+}
+
+.glass-panel {
+  border-radius: 20px;
+  border: 1px solid white;
+  background-color: rgb(255, 255, 255, 0.1);
+  backdrop-filter: blur( 1px );
+  -webkit-backdrop-filter: blur( 1px );
 }
 
 .persona-dialog {
@@ -14,14 +23,44 @@
   flex-direction: column;
   justify-content: flex-start;
 
-  width: 40vw;
+  flex-basis: 40vw;
+  height: 72vh;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-  border-radius: 20px;
-  border: 1px solid white;
+.persona-settings {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
 
-  background-color: rgb(255, 255, 255, 0.1);
-  backdrop-filter: blur( 1px );
-  -webkit-backdrop-filter: blur( 1px );
+  align-self: flex-start;
+}
+
+.persona-settings-button {
+  width: 13vw;
+  margin: 13px;
+}
+
+.persona-description {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  align-self: start;
+}
+
+.description-header {
+  margin: 10px;
+  color: var(--steel-pink);
+}
+
+.description-body {
+  margin: 10px;
+  color: white;
+  max-width: 20vw;
+  font-size: 0.8rem;
 }
 
 .persona-header {
@@ -58,6 +97,8 @@
   overflow-y: auto;
   flex-grow: 1;
   flex-basis: 100vh;
+
+  margin-bottom: auto;
 }
 
 .message {
@@ -65,7 +106,8 @@
   padding: 8px 12px;
   border-radius: 20px;
   border: 1px solid var(--cool-violet);
-  max-width: 80%;
+  max-width: 20vw;
+  font-size: 0.9rem;
   overflow-wrap: break-word;
   color: var(red);
   text-align: left;
