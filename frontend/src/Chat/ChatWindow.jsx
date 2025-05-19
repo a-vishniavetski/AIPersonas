@@ -167,11 +167,11 @@ const ChatWindow = () => {
         transition={{ duration: 1 }}
         className="chatwindow-container"
         >
-      <div className="persona-description glass-panel">
+      <div className="persona-description glass-panel glassmorphism-black">
         <div className="description-header">Description</div>
         <div className="description-body">{loremIpsum}</div>
       </div>
-      <div className="persona-dialog glass-panel">
+      <div className="persona-dialog glass-panel glassmorphism-black">
         <div className="persona-header">
           <img src={`/personas/${persona_name.toLowerCase()}.png`} alt={persona_name} />
           <h3 className='persona-title'>{ persona_name }</h3>

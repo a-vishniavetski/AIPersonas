@@ -20,7 +20,7 @@ const MainLayout = () => {
                 <Outlet /> {/* Page-specific content goes here */}
             </main>
 
-            <footer className="main-footer">
+            <footer className="main-footer glassmorphism-black">
                 2025 © Twórcy Czatbotów
             </footer>
         </motion.div>

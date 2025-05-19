@@ -4,18 +4,18 @@ import AuthButton from '../Auth/AuthButton';
 
 function Header() {
   return (
-    <header className="header">
+    <header className="header glassmorphism-black">
+      <div className="main-header-text">
+          <Link to="/" className="main-header-text">
+            AI Personas
+          </Link>
+      </div>
       {<nav className="nav-bar">
         <Link to="/">
           <button className="nav-button">Home</button>
         </Link>
         <AuthButton />
       </nav>}
-    <div className="main-header-text">
-         <Link to="/" className="main-header-text">
-          AI Personas
-        </Link>
-    </div>
     </header>
   );
 }

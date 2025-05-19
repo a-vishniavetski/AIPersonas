@@ -36,7 +36,7 @@ function Menu() {
   };
 
   return (
-    <div className="menu-container">
+    <div className="menu-container glassmorphism-black">
       <div className="header-text">
         <h2 className='typing'>Choose your character!</h2>
       </div>
