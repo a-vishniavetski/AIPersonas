@@ -4,7 +4,7 @@ import AuthButton from '../Auth/AuthButton';
 
 function Header() {
   return (
-    <header className="header">
+    <header className="header glassmorphism-black">
       <div className="main-header-text">
           <Link to="/" className="main-header-text">
             AI Personas

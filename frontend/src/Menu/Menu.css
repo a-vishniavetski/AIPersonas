@@ -9,9 +9,9 @@
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.7);
 
-  background-color: rgb(255, 255, 255, 0.05);
-  backdrop-filter: blur( 2.5px );
-  -webkit-backdrop-filter: blur( 2.5px );
+  /* background-color: rgba(0, 0, 0, 0.60);
+  backdrop-filter: blur( 2.5px ) saturate(150%);
+  -webkit-backdrop-filter: blur( 2.5px ); */
 }
 
 .header-text {
