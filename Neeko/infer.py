@@ -20,7 +20,7 @@ ROLE_PROFILE_MAPPING={
         "Voldemort": "",
     }
 for k in ROLE_PROFILE_MAPPING.keys():
-    ROLE_PROFILE_MAPPING[k] = torch.load(os.path.join("/path/to/your/role_embds", k + ".pth")).unsqueeze(0).cuda()
+    ROLE_PROFILE_MAPPING[k] = torch.load(os.path.join("./data/embed", k + ".pth")).unsqueeze(0).cuda()
 
 
 def read_profile(path):
@@ -35,7 +35,7 @@ def read_profile(path):
 
 ROLE_PROFILE_TEXT={}
 for k in ROLE_PROFILE_MAPPING.keys():
-    profile = read_profile(os.path.join("/path/to/your/seed_data/profiles", "wiki_" + k + ".txt"))
+    profile = read_profile(os.path.join("./data/profiles", "wiki_" + k + ".txt"))
     ROLE_PROFILE_TEXT[profile] = k
 
 def mean_pooling(model_output, attention_mask):
@@ -52,19 +52,19 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Infer")
 
     parser.add_argument(
-        "--infer_path", type=str, default="/home/tongxuluo/Neeko/seed_data/questions/generated_agent_interview_Beethoven.json", help="path of json."
+        "--infer_path", type=str, default="./data/seed_data/questions/generated_agent_interview_Beethoven.json", help="path of json."
     )
     parser.add_argument(
-        "--save_path", type=str, default='/home/tongxuluo/Neeko/results/Neeko/Beethoven_single.json'
+        "--save_path", type=str, default='./data/seed_data/answers/Beethoven_single.json'
     )
     parser.add_argument(
-        "--LLM", type=str, default="/home/tongxuluo/models/Llama-2-7b-hf"
+        "--LLM", type=str, default="meta-llama/Llama-3.2-1B"
     )
     parser.add_argument(
         "--character", type=str, default="Beethoven"
     )
     parser.add_argument(
-        "--lora_path", type=str, default="/home/tongxuluo/Neeko/ckpt/neeko/wo_caesar/20240203140411"
+        "--lora_path", type=str, default="./data/train_output"
     )
     parser.add_argument(
         "--resume_id", type=int, default=0
