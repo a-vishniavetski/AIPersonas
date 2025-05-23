@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import "./Menu.css";
+import LoginModal from '../Auth/LoginModal/LoginModal';
 
 const personas = [
   { name: 'Cleopatra', image: 'src/assets/personas/cleopatra.png' },
@@ -14,96 +15,56 @@ const personas = [
   { name: 'Voldemort', image: 'src/assets/personas/voldemort.png' },
 ];
 
-
 function Menu() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [personasName, setPersonasName] = useState("");
-    const [personasDesc, setPersonasDesc] = useState("");
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const navigate = useNavigate();
 
-    const addPersona = () => {
-        setIsOpen(true);
-    };
+  const handlePersonaClick = (personaName) => {
+    // if (!localStorage.getItem('token')) {
+    //   setShowLoginModal(true);
+    // } else {
+    //   navigate(`/ChatWindow/${personaName}`);
+    // }
+    navigate(`/ChatWindow/${personaName}`);
+  };
+  const handleAddPersonaClick = () => {
+    if (!localStorage.getItem('token')) {
+      setShowLoginModal(true);
+    } else {
+      navigate(`/AddPersona`);
+    }
+  };
 
-    const acceptPersona = async (e) => {
-        e.preventDefault();
+  return (
+    <div className="menu-container glassmorphism-black">
+      <div className="header-text">
+        <h2 className='typing'>Choose your character!</h2>
+      </div>
 
-        try {
-            console.log("TRYING");
-            const response = await fetch("https://localhost:8080/api/add_persona", {
-                method: "POST",
-                body: JSON.stringify({
-                    user_id: "example",
-                    persona_name: personasName,
-                    persona_description: personasDesc,
-                }),
-            });
+      <div className="personas-list">
+        {personas.map((persona) => (
+          <div
+            key={persona.name}
+            className="persona-card cursor-pointer"
+            onClick={() => handlePersonaClick(persona.name)}
+          >
+            <img src={`/personas/${persona.name.toLowerCase()}.png`} alt={persona.name} />
+            <div className="persona-name">{persona.name}</div>
+          </div>
+        ))}
+        <div
+          className="persona-card cursor-pointer"
+          onClick={handleAddPersonaClick}
+        >
+            <img src="/personas/plus.png" alt="Add Persona" />
+            <div className="persona-name">Add Persona</div>
+        </div>
+      </div>
 
-            if (response.status !== 200) {
-                alert("shit happens");
-                throw new Error("Error while adding new persona");
-            }
-        } catch (err) {
-            console.error("Błąd: ", err);
-        }
-    };
-
-    return (
-        <>
-            <div className="menu-container">
-                    {/* <Link to="/auth">
-                        <button className="bg-blue-500 text-white p-2 rounded mt-2 mr-2">
-                            Go to Auth Page
-                        </button>
-                    </Link> */}
-
-                <div className="header-text">
-                    <h1 style={{ fontFamily: 'Batman' }}>Choose your character!</h1>
-                </div>
-
-                <div className="personas-list">
-                    {personas.map((persona) =>  (
-                        <Link key={persona.name} to={`/ChatWindow/${persona.name}`} className="persona-card">
-                            <img src={persona.image} alt={persona.name} />
-                            <div className='persona-name'>{persona.name}</div>
-                        </Link>
-                    ))}
-                    <Link to="AddPersona" className="persona-card">
-                        <img src="src/assets/personas/plus.png" alt="Add Persona" />
-                        <div className='persona-name'>Add Persona</div>
-                    </Link>
-                    
-                    {isOpen && (
-                        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                            <div className="bg-white p-8 rounded shadow-lg relative">
-                                <input
-                                    value={personasName}
-                                    onChange={(e) => setPersonasName(e.target.value)}
-                                    type="text"
-                                    className="form-control"
-                                    id="persona_name_input"
-                                    placeholder="Persona's name"
-                                />
-                                <textarea
-                                    value={personasDesc}
-                                    onChange={(e) => setPersonasDesc(e.target.value)}
-                                    className="form-control"
-                                    id="persona_description_textarea"
-                                    rows="3"
-                                    placeholder="Enter description"
-                                ></textarea>
-                                <button
-                                    onClick={acceptPersona}
-                                    className="mt-4 bg-red-500 text-white p-2 rounded"
-                                >
-                                    Save Persona
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </>
-    );
+      {/* Modal rendered outside of the menu-container */}
+      <LoginModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
+    </div>
+  );
 }
 
 export default Menu;
