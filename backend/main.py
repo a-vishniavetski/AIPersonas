@@ -1,6 +1,10 @@
 import os
 import sys
 
+from fastapi import Depends
+
+from Neeko.embd_roles import embed_character
+from backend.db import User
 from fastapi.responses import StreamingResponse
 
 # sys.path.append(os.path.join(os.path.dirname(__file__), '../security'))
@@ -73,19 +77,12 @@ class UserPersonaData(BaseModel):
 class ConversationHistory(BaseModel):
     conversation_id: int
 
+class NewPersonaData:
+    persona_name: str
+    persona_description: str
+
 class UserData(BaseModel):
     user_id: uuid.UUID
-
-@app.post('/api/add_persona')
-async def add_persona(request: UserPersonaData, user: User = Depends(current_active_user)):
-    user_id = user.id
-    persona_id, conversation_id = await insert_persona_and_conversation(user_id, request.persona_name, request.persona_description)
-    return {
-        'persona_id': persona_id,
-        'persona_name': request.persona_name,
-        'user_id': user_id,
-        'conversation_id': conversation_id,
-    }
 
 
 @app.post('/api/get_user_personas')
@@ -99,6 +96,36 @@ async def get_user_personas(request: UserData, user: User = Depends(current_acti
         'persona_names': persona_names,
     }
 
+
+@app.post('/api/add_persona')
+async def add_persona(request: UserPersonaData, user: User = Depends(current_active_user)):
+    user_id = user.id
+    persona_id, conversation_id = await insert_persona_and_conversation(user_id, request.persona_name, request.persona_description)
+    return {
+        'persona_id': persona_id,
+        'persona_name': request.persona_name,
+        'user_id': user_id,
+        'conversation_id': conversation_id,
+    }
+
+
+@app.post('/api/new_persona')
+async def add_new_persona(request: NewPersonaData, user: User = Depends(current_active_user)):
+    user_id = user.id
+    user_email = user.email
+    with open(f"{'../Neeko/data/seed_data/profiles'}/wiki_{request.persona_name}", "w") as f:
+        f.write(f"# {request.persona_name}\n\n{request.persona_description}\n")
+
+    embed_character(character_name=request.persona_name, encoder_path="google-bert/bert-large-uncased",
+                    seed_data_path="../Neeko/data/seed_data",
+                    save_path="../Neeko/data/embed")
+    #persona_id, conversation_id = await insert_persona_and_conversation(user_id, request.persona_name, request.persona_description)
+    return {
+        'persona_id': persona_id,
+        'persona_name': request.persona_name,
+        'user_id': user_id,
+        'conversation_id': conversation_id,
+    }
 
 @app.post('/api/chat_history')
 async def get_chats_history(request: ConversationHistory, user: User = Depends(current_active_user)):
@@ -138,20 +165,6 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
 
     # Prepare message from qdrant
     conversation_history = process_qdrant_results(search_results)
-
-
-    # system_prompt = f"""
-    #     I want you to act like {request.persona}. I want you to respond and answer like {request.persona},
-    #     using the tone, manner and vocabulary {request.persona} would use.
-    #     You must know all of the knowledge of {request.persona}.
-    #
-    #     The status of you is as follows:
-    #     Location: Poland
-    #
-    #     The interactions are as follows:
-    #     """
-    #
-    # full_prompt = system_prompt + "\nUser: " + request.prompt + ":"
 
     system_prompt = f"""
         I want you to act like {request.persona}. I want you to respond and answer like {request.persona},
