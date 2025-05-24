@@ -53,8 +53,17 @@ def main(
 def embed_character(character_name: str, encoder_path: str = '/path/to/your/deberta-v3-large',
                     seed_data_path: str = '/path/to/your/seed_data',
                     save_path: str = '/path/to/save/your/role_embds'):
-    ROLE_PROFILE_MAPPING[character_name] = ""
-    main(encoder_path, seed_data_path, save_path)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    NEW_CHARACTER_MAPPING = read_profile(os.path.join(seed_data_path, "profiles/wiki_" + character_name + ".txt"))
+
+    tokenizer = AutoTokenizer.from_pretrained(encoder_path)
+    encoder = AutoModel.from_pretrained(encoder_path)
+
+    input = tokenizer.encode(NEW_CHARACTER_MAPPING, return_tensors="pt")
+    out = encoder(input)
+    cls_token = out.last_hidden_state[:, 0, :].reshape(-1)
+    torch.save(cls_token, os.path.join(save_path, character_name + ".pth"))
 
 
 if __name__ == "__main__":
