@@ -77,7 +77,7 @@ class UserPersonaData(BaseModel):
 class ConversationHistory(BaseModel):
     conversation_id: int
 
-class NewPersonaData:
+class NewPersonaData(BaseModel):
     persona_name: str
     persona_description: str
 
@@ -113,13 +113,13 @@ async def add_persona(request: UserPersonaData, user: User = Depends(current_act
 async def add_new_persona(request: NewPersonaData, user: User = Depends(current_active_user)):
     user_id = user.id
     user_email = user.email
-    with open(f"{'../Neeko/data/seed_data/profiles'}/wiki_{request.persona_name}", "w") as f:
+    with open(f"{'../Neeko/data/seed_data/profiles'}/wiki_{request.persona_name}.txt", "w") as f:
         f.write(f"# {request.persona_name}\n\n{request.persona_description}\n")
 
     embed_character(character_name=request.persona_name, encoder_path="google-bert/bert-large-uncased",
                     seed_data_path="../Neeko/data/seed_data",
                     save_path="../Neeko/data/embed")
-    #persona_id, conversation_id = await insert_persona_and_conversation(user_id, request.persona_name, request.persona_description)
+    persona_id, conversation_id = await insert_persona_and_conversation(user_id, request.persona_name, request.persona_description)
     return {
         'persona_id': persona_id,
         'persona_name': request.persona_name,
