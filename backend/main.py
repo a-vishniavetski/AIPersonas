@@ -5,9 +5,16 @@ from fastapi import Depends
 
 from Neeko.embd_roles import embed_character
 from backend.db import User
+from fastapi.responses import StreamingResponse
 
 # sys.path.append(os.path.join(os.path.dirname(__file__), '../security'))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.join(os.path.dirname(__file__)))
+
+from fastapi import Depends
+
+from backend.db import User, SenderType, Personas
+
 
 from dotenv import load_dotenv
 from huggingface_hub import login
@@ -25,8 +32,11 @@ from backend.database_interactions import (
     insert_persona_and_conversation,
     save_message,
     get_messages_from_conversation,
-    get_all_user_personas
+    get_all_user_personas,
+    get_persona_by_conversation_id
 )
+
+from conversation_pdf import get_pdf_conversation
 
 
 load_dotenv('./env/.env')
@@ -49,10 +59,10 @@ base_model_path = adapter_config["base_model_name_or_path"]
 model = AutoModelForCausalLM.from_pretrained(base_model_path)
 tokenizer = AutoTokenizer.from_pretrained(base_model_path)
 
+
 # Load the LoRA adapter to base model
 adapter_weights = torch.load("../Neeko/data/train_output/adapter_model.bin")
 model.load_state_dict(adapter_weights, strict=False)
-
 
 class UserMessage(BaseModel):
     prompt: str
@@ -165,7 +175,7 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
         Location: Poland
 
         The interactions are as follows:
-        {conversation_history}
+        
         Now, this is a new message from user: {request.prompt}:
     """
 
@@ -198,6 +208,26 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
     await save_message(request.conversation_id, SenderType.BOT, generated_text)
     return generated_text
 
+
+@app.post('/api/pdf_conversation')
+async def pdf_conversation(request: ConversationHistory, user: User = Depends(current_active_user)):
+    """
+    Get ONE specific conversation to load into the chat window.
+    """
+    persona: Personas = await get_persona_by_conversation_id(request.conversation_id)
+    metadata = {
+        "date": "TODO",
+        "username": User.email,
+        "bot_name": persona.name,
+    }
+    messages = await get_messages_from_conversation(request.conversation_id)
+    pdf = get_pdf_conversation(metadata, messages)
+    filename = f"conversation_with_{persona.name}.pdf"
+    return StreamingResponse(
+        pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename={0}".format(filename)},
+    )
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, ssl_keyfile="env/key.pem", ssl_certfile="env/cert.pem")

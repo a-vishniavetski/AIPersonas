@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useRef } from 'react';
 import {Link, useParams} from "react-router-dom";
 import './ChatWindow.css';
+import { Input, Button } from '@headlessui/react'
+import { motion } from 'framer-motion';
+import { downloadPDFConversation } from './ChatWindowsApi';
+
+// Placeholder until description is fetched from backend
+const loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ";
 
 const ChatWindow = () => {
   const [messages, setMessages] = useState([]);
@@ -19,14 +25,26 @@ const ChatWindow = () => {
   const token = localStorage.getItem("token");
 
   const didRunOnce = React.useRef(false);  // flag for React development behavior (useEffect runs twice in dev, but we don't want that)
+
+  const handleExportToPdf = () => {
+    if (conversationId) {
+      downloadPDFConversation(conversationId, token)
+        .catch(error => {
+          console.error('Error downloading PDF:', error);
+          // Handle error (show notification to user, etc.)
+          window.alert('Failed to download PDF. Please try again later.');
+        });
+    } else {
+      console.error('No conversation ID available');
+      // Handle case where conversation ID is not available
+      window.alert("Can't download PDF right now. Please try again later.");
+    }
+  };
+
   useEffect(() => {
     if (didRunOnce.current) return; // Prevents the effect from running again
     didRunOnce.current = true; // Set the flag to true after the first run
 
-    if (!token) {
-      alert("You must be logged in to send messages");
-      return;
-    }
     if (!persona_name) {
       alert("You must select a persona to send messages");
       return;
@@ -49,14 +67,9 @@ const ChatWindow = () => {
     .then(res => res.json())
     .then(data => {
       console.log("Persona ID:", data.persona_id);
-      // You can store persona_id if needed
       setPersonaId(data.persona_id);
       setUserId(data.user_id);
       setConversationId(data.conversation_id);
-      // console.log("Conversation ID:", conversationId);
-      // console.log("User ID:", userId);
-      // console.log("Persona ID:", personaId);
-      // console.log("Persona name:", persona_name);
     })
     .catch(err => console.error("Persona creation failed:", err));
   }, [token, persona_name]);
@@ -147,11 +160,21 @@ const ChatWindow = () => {
   }, [messages]);
 
   return (
-    <div className="chatbot-container">
-      {/* Chatbot window */}
-      <div className="chatbot-window">
-        <div className="chatbot-header">
-          <h3>Chatbot</h3>
+    <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 1 }}
+        className="chatwindow-container"
+        >
+      <div className="persona-description glass-panel glassmorphism-black">
+        <div className="description-header">Description</div>
+        <div className="description-body">{loremIpsum}</div>
+      </div>
+      <div className="persona-dialog glass-panel glassmorphism-black">
+        <div className="persona-header">
+          <img src={`/personas/${persona_name.toLowerCase()}.png`} alt={persona_name} />
+          <h3 className='persona-title'>{ persona_name }</h3>
         </div>
         <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
           {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >{message.text}
@@ -159,13 +182,20 @@ const ChatWindow = () => {
           ))}
           <div ref={messagesEndRef} />
         </div>
-        <form className="chatbot-input" onSubmit={handleSubmit}>
-          <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
+
+        <form className="persona-input" onSubmit={handleSubmit}>
+          <Input autoComplete="off" type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
           />
-          <button type="submit">↑</button>
+          <Button type="submit">↑</Button>
         </form>
       </div>
-    </div>
+      <div className="persona-settings">
+        <Button className="button persona-settings-button" onClick={handleExportToPdf}>Export to PDF</Button>
+        <Button className="button persona-settings-button">Clear chat (?)</Button>
+        <Button className="button persona-settings-button">Change persona (?)</Button>
+      </div>
+
+      </motion.div>
   );
 };
 

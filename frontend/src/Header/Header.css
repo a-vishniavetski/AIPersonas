@@ -2,12 +2,18 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: 1rem;
-  border: 1px solid #00ff99;
-  background-color: #101010;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border: 1px solid var(--blood-red);
   text-align: center;
   font-weight: bold;
   letter-spacing: 1px;
+
+  /* background-color: rgba(0, 0, 0, 0.60);
+  backdrop-filter: blur( 2.5px );
+  -webkit-backdrop-filter: blur( 2.5px ); */
 }
 
 .nav-bar {
@@ -16,11 +22,10 @@
   align-items: center;
 }
 
-
-
 .main-header-text {
-    font-family: 'WeirdCoolCyberpunk';
-    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+    /* font-family: 'WeirdCoolCyberpunk'; */
+    text-shadow: 0 2px 8px black;
     font-size: 2.5rem;
     color: red;
+    text-decoration: none;
 }

@@ -70,3 +70,10 @@ async def get_all_user_personas(user_id):
         result = await session.execute(query)
         personas = result.scalars().all()
         return [{"persona_name": persona.name} for persona in personas]
+    
+async def get_persona_by_conversation_id(conversation_id):
+    async with AsyncSession(engine) as session:
+        query = select(Personas).join(Conversations).filter(Conversations.id == conversation_id)
+        result = await session.execute(query)
+        persona = result.scalars().first()
+        return persona
