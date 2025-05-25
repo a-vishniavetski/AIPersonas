@@ -50,3 +50,39 @@ docker run --rm -v "${pwd}:/usr/src" sonarsource/sonar-scanner-cli
 5. After scan is complete open the `http://localhost:9000`, login, Go to Projects to see the result
 6. To turn off the SonarQube server run `docker compose down`
 ---
+## MANUAL FOR USING JMETER
+JMeter has 2 modes _GUI_ and _NON-GUI_. _GUI_ mode is good for debugging and creating the test scenario (a.k.a `jmx` file). When the test scenario - `.jmx` file is created it can and will be used for running the test scenario.
+> NB! _GUI_ mode allows for adding plots while debugging BUT those plots significantly slow the test process down. So please do not forget to remove them. Default reporting mechanism is enough and does not require from you setting up reporting things yourself
+#### OVERALL FLOW
+1. Navigate to `JMeter/bin` folder
+2. Run GUI mode (either `./jmeter` on linux or `jmeter.bat` on windows)
+   1. Add a Thread Group:
+      1. Right-click Test Plan > Add > Threads (Users) > Thread Group 
+      2. Set number of users (threads), loop count, etc. 
+   2. Add a Sampler (what to test):
+      1. E.g., HTTP Request: Add > Sampler > HTTP Request 
+      2. Enter server name, port, endpoint (e.g., /api/login)
+
+   3. Add a Listener (to view results): (remove before saving `jmx` file)
+      1. Add > Listener > View Results Tree or Summary Report 
+   4. Run the test (Click the green ▶️ button) (for debugging purpose)
+   5. Save the `jmx` file at desired location (`./scenarios/<tested-module>.<version>.jmx`)
+4. Run the CLI mode
+```shell
+./jmeter -n -t ./scenarios/<tested-module>.<version>.jmx -l results.jtl -e -o report/
+```
+The generated report will be under `report` path in the HTML format
+#### USEFUL TIPS
+1. Remove the listener from GUI mode before saving the JMX file
+   2. 🧪 Use Cases <br/>
+   Test Type	What to Do <br/>
+   ✅ HTTP API	Use HTTP Request sampler; test REST APIs, login, data fetch, etc. <br/>
+   ✅ Web App (frontend)	Simulate user interactions with multiple HTTP requests <br/>
+   ✅ Database	Use JDBC Request to run queries, simulate DB load <br/>
+   ✅ File Upload/Download	Test endpoints with files (e.g., via multipart/form-data) <br/>
+3. Use CSV Data Set Config to pass test data (e.g., usernames, tokens). 
+4. Use Assertions to validate response data (e.g., check status code, body content). 
+5. Use Timers to simulate think-time between requests. 
+6. For load testing, slowly increase threads to identify the breaking point (spike/stress testing). 
+7. You can define the whole user flow by testing multiple endpoints at ones
+8. You can define the endpoint to run only ones (for example for retrieving the auth token)
