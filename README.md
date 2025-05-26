@@ -54,6 +54,7 @@ docker run --rm -v "${pwd}:/usr/src" sonarsource/sonar-scanner-cli
 JMeter has 2 modes _GUI_ and _NON-GUI_. _GUI_ mode is good for debugging and creating the test scenario (a.k.a `jmx` file). When the test scenario - `.jmx` file is created it can and will be used for running the test scenario.
 > NB! _GUI_ mode allows for adding plots while debugging BUT those plots significantly slow the test process down. So please do not forget to remove them. Default reporting mechanism is enough and does not require from you setting up reporting things yourself
 #### OVERALL FLOW
+0Unzip somewhere archive with JMeter
 1. Navigate to `JMeter/bin` folder
 2. Run GUI mode (either `./jmeter` on linux or `jmeter.bat` on windows)
    1. Add a Thread Group:
@@ -66,7 +67,7 @@ JMeter has 2 modes _GUI_ and _NON-GUI_. _GUI_ mode is good for debugging and cre
    3. Add a Listener (to view results): (remove before saving `jmx` file)
       1. Add > Listener > View Results Tree or Summary Report 
    4. Run the test (Click the green ▶️ button) (for debugging purpose)
-   5. Save the `jmx` file at desired location (`./scenarios/<tested-module>.<version>.jmx`)
+   5. Save the `jmx` file at (`AIPersonas/JMeter/scenarios/<tested-module>.<version>.jmx`)
 4. Run the CLI mode
 ```shell
 ./jmeter -n -t ./scenarios/<tested-module>.<version>.jmx -l results.jtl -e -o report/
