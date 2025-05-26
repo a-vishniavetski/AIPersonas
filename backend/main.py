@@ -1,6 +1,11 @@
 import os
 import sys
 
+import logging
+import tempfile
+
+from starlette.exceptions import HTTPException
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from Neeko.embd_roles import embed_character
@@ -11,7 +16,7 @@ from fastapi.responses import StreamingResponse
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
-from fastapi import Depends
+from fastapi import Depends, UploadFile, File
 
 from backend.db import User, SenderType, Personas
 
@@ -20,8 +25,10 @@ from pydantic import BaseModel
 from backend.app import app
 from backend.users import current_active_user
 from backend.qdrant_interactions import *
+from backend.voice_communication import *
 import uuid
 import uvicorn
+import whisper
 
 from backend.database_interactions import (
     insert_persona_and_conversation,
@@ -43,8 +50,22 @@ login(token=hf_token)
 
 # app = FastAPI()
 
-# Load the base model name
-tokenizer, model = load_model(lora_path="../Neeko/data/train_output")
+##### Models loading
+whisper_model = None
+neeko_model = None
+neeko_tokenizer = None
+logging.info("Loading AI models")
+try:
+    whisper_model = whisper.load_model("base")
+    logging.info("Whisper model loaded.")
+except Exception as e:
+    logging.error(f"Failed to load Whisper model: {e}")
+
+try:
+    neeko_tokenizer, neeko_model = load_model(lora_path="../Neeko/data/train_output")
+    logging.info("Neeko model loaded.")
+except Exception as e:
+    logging.error(f"Failed to load Neeko model: {e}")
 
 
 class UserMessage(BaseModel):
@@ -154,13 +175,13 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
     # Prepare message from qdrant
     # conversation_history = process_qdrant_results(search_results)
 
-    generated_text = ask_character(model=model, tokenizer=tokenizer, character=request.persona,
-                                    profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
+    generated_text = ask_character(model=neeko_model, tokenizer=neeko_tokenizer, character=request.persona,
+                                   profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
                                    question=request.prompt)
 
     # Generate the vector (embedding) for the generated text (use model's embedding layer)
-    # inputs_for_vector = tokenizer(generated_text, return_tensors="pt")
-    # vector = model.encode(inputs_for_vector['input_ids']).detach().numpy().flatten()  # Generate the embedding
+    # inputs_for_vector = neeko_tokenizer(generated_text, return_tensors="pt")
+    # vector = neeko_model.encode(inputs_for_vector['input_ids']).detach().numpy().flatten()  # Generate the embedding
     # vector = vector.tolist()  # Convert to list to save to Qdrant
 
     # Save the generated message (or raw token output if desired) to Qdrant
@@ -189,6 +210,33 @@ async def pdf_conversation(request: ConversationHistory, user: User = Depends(cu
         media_type="application/pdf",
         headers={"Content-Disposition": "attachment; filename={0}".format(filename)},
     )
+
+
+
+def allowed_file(filename):
+    allowed_extensions = {"mp3", "m4a"}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+
+@app.post("/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    if not allowed_file(file.filename):
+        raise HTTPException(status_code=400, detail="Invalid file type. Only mp3 and m4a are allowed.")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.' + file.filename.rsplit('.', 1)[1]) as temp_file:
+        temp_file.write(await file.read())
+        temp_file_path = temp_file.name
+
+    try:
+        result = transcribe_audio_file(whisper_model, temp_file_path)
+        return {
+            "text": result["text"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
 
 
 if __name__ == "__main__":
