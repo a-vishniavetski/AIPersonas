@@ -5,6 +5,7 @@ import logging
 import tempfile
 
 from starlette.exceptions import HTTPException
+from starlette.responses import FileResponse
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -16,7 +17,7 @@ from fastapi.responses import StreamingResponse
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
-from fastapi import Depends, UploadFile, File
+from fastapi import Depends, UploadFile, File, BackgroundTasks
 
 from backend.db import User, SenderType, Personas
 
@@ -52,6 +53,7 @@ login(token=hf_token)
 
 ##### Models loading
 whisper_model = None
+whisper_speech = None
 neeko_model = None
 neeko_tokenizer = None
 logging.info("Loading AI models")
@@ -66,6 +68,14 @@ try:
     logging.info("Neeko model loaded.")
 except Exception as e:
     logging.error(f"Failed to load Neeko model: {e}")
+
+try:
+    from whisperspeech.pipeline import Pipeline
+    whisper_speech = Pipeline(t2s_ref='whisperspeech/whisperspeech:t2s-v1.95-small-8lang.model',
+                s2a_ref='whisperspeech/whisperspeech:s2a-v1.95-medium-7lang.model')
+    logging.info("WhisperSpeech model loaded.")
+except Exception as e:
+    logging.error(f"Failed to load WhisperSpeech model: {e}")
 
 
 class UserMessage(BaseModel):
@@ -238,6 +248,24 @@ async def transcribe_audio(file: UploadFile = File(...)):
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
+class TextToSpeech(BaseModel):
+    text: str
+    lang: str = 'en'
+@app.post("/text_to_speech")
+async def text_to_speech(request: TextToSpeech, background_tasks: BackgroundTasks):
+    # Generate a unique filename
+    output_filename = f"output_{uuid.uuid4().hex}.wav"
+
+    # Generate speech and save to file
+    whisper_speech.generate_to_file(
+        text=request.text,
+        lang=request.lang,
+        fname=output_filename
+    )
+
+    background_tasks.add_task(os.remove, output_filename)
+
+    return FileResponse(output_filename, media_type="audio/wav", filename=output_filename)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, ssl_keyfile="env/key.pem", ssl_certfile="env/cert.pem")
