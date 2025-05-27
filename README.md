@@ -14,6 +14,9 @@
 2. For the correct work of the Google SSO please place the `google_oauth_client.json` file in the `backend/env` directory
 3. Place HTTPS certificate under name `cert.pem` in the `backend/env`
 4. Place HTTPS key under name `key.pem` in the `backend/env`
+5. Go to `frontend` and run `npm install`
+6. Go to `backend` and run `pip install -r requirements.txt`
+7. Go to `Neeko` and run `pip install -r requirements.txt`
 ### Running services
 #### Running frontend
 ```shell
