@@ -298,7 +298,7 @@ const ChatWindow = () => {
         <Button className="button persona-settings-button">Change persona</Button>
 
         <div style={{ margin: '20px 0', textAlign: 'center' }}>
-          <label style={{ color: 'red', marginBottom: '8px', display: 'block' }}>Temperature</label>
+          <label style={{ color: 'red', marginBottom: '8px', display: 'block' }}>Creativity</label>
           <TemperatureKnob value={temperature} onChange={setTemperature} />
         </div>
       </div>
