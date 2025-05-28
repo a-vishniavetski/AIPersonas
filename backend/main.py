@@ -82,6 +82,7 @@ class UserMessage(BaseModel):
     prompt: str
     persona: str
     conversation_id: int
+    temperature: float
 
 
 class UserPersonaData(BaseModel):
@@ -185,9 +186,9 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
     # Prepare message from qdrant
     # conversation_history = process_qdrant_results(search_results)
 
-    generated_text = ask_character(model=neeko_model, tokenizer=neeko_tokenizer, character=request.persona,
-                                   profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
-                                   question=request.prompt)
+    generated_text = ask_character(model=model, tokenizer=tokenizer, character=request.persona,
+                                    profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
+                                   question=request.prompt, temperature=request.temperature)
 
     # Generate the vector (embedding) for the generated text (use model's embedding layer)
     # inputs_for_vector = neeko_tokenizer(generated_text, return_tensors="pt")
