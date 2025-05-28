@@ -86,7 +86,7 @@
 }
 
 .persona-title {
-  color: var(red);
+  color: red;
 }
 
 .chatbot-messages {
@@ -109,7 +109,7 @@
   max-width: 20vw;
   font-size: 0.9rem;
   overflow-wrap: break-word;
-  color: var(red);
+  color: red;
   text-align: left;
 }
 
@@ -173,3 +173,72 @@
   color: var(--steel-pink);
   border: 1px solid var(--steel-pink);
 }
+
+/*spinner*/
+.overlay-spinner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.6);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner {
+  border: 8px solid white;
+  border-top: 8px solid var(--steel-pink);
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.mic-button {
+  padding: 5px 15px;
+  border: 1px solid white;
+  color: white;
+  background-color: transparent;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 23px;
+  backdrop-filter: none;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+.mic-button:hover {
+  color: var(--steel-pink);
+  border: 1px solid var(--steel-pink);
+}
+
+.mic-button.recording {
+  background-color: red;
+  color: white;
+}
+
+#voiceOver_button {
+  padding: 3px 3px;
+  color: white;
+  border: none;
+  background-color: transparent;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 10px;
+  backdrop-filter: none;
+  box-shadow: none;
+  transition: all 0.3s ease;
+}
+
+#voiceOver_button:hover {
+  color: var(--steel-pink);
+  border: 1px solid var(--steel-pink);
+}
+

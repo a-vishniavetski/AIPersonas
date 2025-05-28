@@ -18,6 +18,11 @@ const ChatWindow = () => {
   const [personaId, setPersonaId] = useState(null);
   const [conversationId, setConversationId] = useState(null);
   const [temperature, setTemperature] = useState(0.1);
+  // voice message by user
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const audioChunksRef = useRef([]);
 
   const [pendingPrompt, setPendingPrompt] = useState(null);
 
@@ -162,6 +167,84 @@ const ChatWindow = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // ——— User records voice message and results transcribed ———
+  const toggleRecording = async () => {
+    if (isRecording) {
+      // Stop recording
+      mediaRecorder.stop();
+      setIsRecording(false);
+    } else {
+      // Start recording
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        setMediaRecorder(recorder);
+        audioChunksRef.current = [];
+
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+
+        recorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const formData = new FormData();
+          formData.append("file", audioBlob, "recording.m4a");
+
+          setIsTranscribing(true);
+
+          try {
+            const res = await fetch("https://localhost:8000/transcribe", {
+              method: "POST",
+              body: formData
+            });
+
+            const result = await res.json();
+            setInput(result.text); // ✅ Populate input with transcribed text
+          } catch (err) {
+            console.error("Transcription failed:", err);
+            alert("Failed to transcribe. Please try again.");
+          } finally {
+            setIsTranscribing(false);
+          }
+        };
+
+        recorder.start();
+        setIsRecording(true);
+      } catch (err) {
+        console.error("Microphone access denied:", err);
+        alert("Microphone access is required.");
+      }
+    }
+  };
+
+  // ——— Text to speech handling ———
+  async function handlePlayAudio(text) {
+    try {
+      const response = await fetch('/text_to_speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text, lang: 'en' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate speech');
+      }
+
+      const blob = await response.blob();
+      const audioUrl = URL.createObjectURL(blob);
+
+      const audio = new Audio(audioUrl);
+      await audio.play();
+    } catch (error) {
+      console.error('Audio playback failed:', error);
+    }
+  }
+
+
   return (
     <motion.div
         initial={{ opacity: 0 }}
@@ -180,8 +263,18 @@ const ChatWindow = () => {
           <h3 className='persona-title'>{ persona_name }</h3>
         </div>
         <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
-          {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >{message.text}
-          </div>
+          {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >
+                {message.text}
+                {/* Only show play button for bot messages */}
+                {message.sender === 'bot' && (
+                  <button
+                    id="voiceOver_button"
+                    onClick={() => handlePlayAudio(message.text)}
+                  >
+                    🔊
+                  </button>
+                )}
+              </div>
           ))}
           <div ref={messagesEndRef} />
         </div>
@@ -190,20 +283,30 @@ const ChatWindow = () => {
           <Input autoComplete="off" type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
           />
           <Button type="submit">↑</Button>
+           <button
+            type="button"
+            onClick={toggleRecording}
+            className={`mic-button ${isRecording ? 'recording' : ''}`}
+            >
+              🎙️
+          </button>
         </form>
       </div>
       <div className="persona-settings">
         <Button className="button persona-settings-button" onClick={handleExportToPdf}>Export to PDF</Button>
-        <Button className="button persona-settings-button">Clear chat (?)</Button>
-        <Button className="button persona-settings-button">Change persona (?)</Button>
+        <Button className="button persona-settings-button">Clear chat</Button>
+        <Button className="button persona-settings-button">Change persona</Button>
 
         <div style={{ margin: '20px 0', textAlign: 'center' }}>
           <label style={{ color: 'red', marginBottom: '8px', display: 'block' }}>Temperature</label>
           <TemperatureKnob value={temperature} onChange={setTemperature} />
         </div>
-
       </div>
-
+      {isTranscribing && (
+          <div className="overlay-spinner">
+            <div className="spinner"></div>
+          </div>
+        )}
       </motion.div>
   );
 };

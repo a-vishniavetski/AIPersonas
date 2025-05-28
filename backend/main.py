@@ -1,6 +1,12 @@
 import os
 import sys
 
+import logging
+import tempfile
+
+from starlette.exceptions import HTTPException
+from starlette.responses import FileResponse
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from Neeko.embd_roles import embed_character
@@ -11,7 +17,7 @@ from fastapi.responses import StreamingResponse
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
-from fastapi import Depends
+from fastapi import Depends, UploadFile, File, BackgroundTasks
 
 from backend.db import User, SenderType, Personas
 
@@ -20,8 +26,10 @@ from pydantic import BaseModel
 from backend.app import app
 from backend.users import current_active_user
 from backend.qdrant_interactions import *
+from backend.voice_communication import *
 import uuid
 import uvicorn
+import whisper
 
 from backend.database_interactions import (
     insert_persona_and_conversation,
@@ -43,8 +51,31 @@ login(token=hf_token)
 
 # app = FastAPI()
 
-# Load the base model name
-tokenizer, model = load_model(lora_path="../Neeko/data/train_output")
+##### Models loading
+whisper_model = None
+whisper_speech = None
+neeko_model = None
+neeko_tokenizer = None
+logging.info("Loading AI models")
+try:
+    whisper_model = whisper.load_model("base")
+    logging.info("Whisper model loaded.")
+except Exception as e:
+    logging.error(f"Failed to load Whisper model: {e}")
+
+try:
+    neeko_tokenizer, neeko_model = load_model(lora_path="../Neeko/data/train_output")
+    logging.info("Neeko model loaded.")
+except Exception as e:
+    logging.error(f"Failed to load Neeko model: {e}")
+
+try:
+    from whisperspeech.pipeline import Pipeline
+    whisper_speech = Pipeline(t2s_ref='whisperspeech/whisperspeech:t2s-v1.95-small-8lang.model',
+                s2a_ref='whisperspeech/whisperspeech:s2a-v1.95-medium-7lang.model')
+    logging.info("WhisperSpeech model loaded.")
+except Exception as e:
+    logging.error(f"Failed to load WhisperSpeech model: {e}")
 
 
 class UserMessage(BaseModel):
@@ -160,8 +191,8 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
                                    question=request.prompt, temperature=request.temperature)
 
     # Generate the vector (embedding) for the generated text (use model's embedding layer)
-    # inputs_for_vector = tokenizer(generated_text, return_tensors="pt")
-    # vector = model.encode(inputs_for_vector['input_ids']).detach().numpy().flatten()  # Generate the embedding
+    # inputs_for_vector = neeko_tokenizer(generated_text, return_tensors="pt")
+    # vector = neeko_model.encode(inputs_for_vector['input_ids']).detach().numpy().flatten()  # Generate the embedding
     # vector = vector.tolist()  # Convert to list to save to Qdrant
 
     # Save the generated message (or raw token output if desired) to Qdrant
@@ -191,6 +222,51 @@ async def pdf_conversation(request: ConversationHistory, user: User = Depends(cu
         headers={"Content-Disposition": "attachment; filename={0}".format(filename)},
     )
 
+
+
+def allowed_file(filename):
+    allowed_extensions = {"mp3", "m4a"}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+
+@app.post("/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    if not allowed_file(file.filename):
+        raise HTTPException(status_code=400, detail="Invalid file type. Only mp3 and m4a are allowed.")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.' + file.filename.rsplit('.', 1)[1]) as temp_file:
+        temp_file.write(await file.read())
+        temp_file_path = temp_file.name
+
+    try:
+        result = transcribe_audio_file(whisper_model, temp_file_path)
+        return {
+            "text": result["text"]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+
+class TextToSpeech(BaseModel):
+    text: str
+    lang: str = 'en'
+@app.post("/text_to_speech")
+async def text_to_speech(request: TextToSpeech, background_tasks: BackgroundTasks):
+    # Generate a unique filename
+    output_filename = f"output_{uuid.uuid4().hex}.wav"
+
+    # Generate speech and save to file
+    whisper_speech.generate_to_file(
+        text=request.text,
+        lang=request.lang,
+        fname=output_filename
+    )
+
+    background_tasks.add_task(os.remove, output_filename)
+
+    return FileResponse(output_filename, media_type="audio/wav", filename=output_filename)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, ssl_keyfile="env/key.pem", ssl_certfile="env/cert.pem")
