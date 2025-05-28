@@ -51,6 +51,7 @@ class UserMessage(BaseModel):
     prompt: str
     persona: str
     conversation_id: int
+    temperature: float
 
 
 class UserPersonaData(BaseModel):
