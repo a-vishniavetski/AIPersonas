@@ -5,6 +5,7 @@ import './ChatWindow.css';
 import { Input, Button } from '@headlessui/react'
 import { motion } from 'framer-motion';
 import { downloadPDFConversation } from './ChatWindowsApi';
+import { TemperatureKnob } from '../features/TemperatureKnob.jsx';
 
 // Placeholder until description is fetched from backend
 const loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ";
@@ -16,6 +17,7 @@ const ChatWindow = () => {
   const [userId, setUserId] = useState(null);
   const [personaId, setPersonaId] = useState(null);
   const [conversationId, setConversationId] = useState(null);
+  const [temperature, setTemperature] = useState(0.1);
 
   const [pendingPrompt, setPendingPrompt] = useState(null);
 
@@ -49,7 +51,7 @@ const ChatWindow = () => {
       alert("You must select a persona to send messages");
       return;
     }
-    
+
     // GET OR CREATE PERSONA AND RETURN ITS ID
     fetch("https://localhost:8000/api/add_persona", {
       method: "POST",
@@ -132,7 +134,8 @@ const ChatWindow = () => {
         body: JSON.stringify({
           prompt,
           persona: persona_name,
-          conversation_id: conversationId
+          conversation_id: conversationId,
+          temperature: temperature
         }),
         credentials: 'include'
       });
@@ -160,7 +163,7 @@ const ChatWindow = () => {
   }, [messages]);
 
   return (
-    <motion.div 
+    <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -193,6 +196,12 @@ const ChatWindow = () => {
         <Button className="button persona-settings-button" onClick={handleExportToPdf}>Export to PDF</Button>
         <Button className="button persona-settings-button">Clear chat (?)</Button>
         <Button className="button persona-settings-button">Change persona (?)</Button>
+
+        <div style={{ margin: '20px 0', textAlign: 'center' }}>
+          <label style={{ color: 'red', marginBottom: '8px', display: 'block' }}>Temperature</label>
+          <TemperatureKnob value={temperature} onChange={setTemperature} />
+        </div>
+
       </div>
 
       </motion.div>

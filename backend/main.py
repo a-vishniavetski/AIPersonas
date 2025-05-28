@@ -156,7 +156,7 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
 
     generated_text = ask_character(model=model, tokenizer=tokenizer, character=request.persona,
                                     profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
-                                   question=request.prompt)
+                                   question=request.prompt, temperature=request.temperature)
 
     # Generate the vector (embedding) for the generated text (use model's embedding layer)
     # inputs_for_vector = tokenizer(generated_text, return_tensors="pt")
