@@ -295,12 +295,6 @@ const ChatWindow = () => {
       <div className="persona-settings">
         <Button className="button persona-settings-button" onClick={handleExportToPdf}>Export to PDF</Button>
         <Button className="button persona-settings-button">Clear chat</Button>
-        <Button className="button persona-settings-button">Change persona</Button>
-
-        <div style={{ margin: '20px 0', textAlign: 'center' }}>
-          <label style={{ color: 'red', marginBottom: '8px', display: 'block' }}>Creativity</label>
-          <TemperatureKnob value={temperature} onChange={setTemperature} />
-        </div>
       </div>
       {isTranscribing && (
           <div className="overlay-spinner">
