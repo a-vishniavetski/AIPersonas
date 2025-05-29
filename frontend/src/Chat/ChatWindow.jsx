@@ -293,7 +293,6 @@ const ChatWindow = () => {
       <div className="persona-settings">
         <Button className="button persona-settings-button" onClick={handleExportToPdf}>Export to PDF</Button>
         <Button className="button persona-settings-button">Clear chat</Button>
-        <Button className="button persona-settings-button">Change persona</Button>
       </div>
       {isTranscribing && (
           <div className="overlay-spinner">
