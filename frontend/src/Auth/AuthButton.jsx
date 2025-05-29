@@ -55,7 +55,7 @@ const AuthButton = () => {
     <div className="flex gap-2">
       {localStorage.getItem("token") ? (
         <button onClick={handleTestAuth}>
-          Test Auth
+          Auth
         </button>
       ) : (
         <button onClick={handleOAuth}>

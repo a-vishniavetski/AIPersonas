@@ -9,7 +9,7 @@ import { TemperatureKnob } from '../features/TemperatureKnob.jsx';
 import { useAuthenticatedFetch } from './ChatWindowsApi';
 
 // Placeholder until description is fetched from backend
-const loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ";
+const loremIpsum = "Welcome to the AIPersonas by \n'™Twórcy Czatbotów'\n Please use the chat or the mic button to communicate with chosen persona. ENJOY!";
 
 const ChatWindow = () => {
   const authFetch = useAuthenticatedFetch();
@@ -268,7 +268,7 @@ const ChatWindow = () => {
       <div className="persona-settings">
         <Button className="button persona-settings-button" onClick={handleExportToPdf}>Export to PDF</Button>
         <Button className="button persona-settings-button">Clear chat</Button>
-        <Button className="button persona-settings-button">Change persona</Button>
+        {/*<Button className="button persona-settings-button">Change persona</Button>*/}
 
         <div style={{ margin: '20px 0', textAlign: 'center' }}>
           <label style={{ color: 'red', marginBottom: '8px', display: 'block' }}>Creativity</label>
