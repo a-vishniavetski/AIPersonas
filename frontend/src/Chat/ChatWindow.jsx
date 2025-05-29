@@ -6,11 +6,13 @@ import { Input, Button } from '@headlessui/react'
 import { motion } from 'framer-motion';
 import { downloadPDFConversation } from './ChatWindowsApi';
 import { TemperatureKnob } from '../features/TemperatureKnob.jsx';
+import { useAuthenticatedFetch } from './ChatWindowsApi';
 
 // Placeholder until description is fetched from backend
 const loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ";
 
 const ChatWindow = () => {
+  const authFetch = useAuthenticatedFetch();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   var {persona_name} = useParams();
@@ -57,29 +59,34 @@ const ChatWindow = () => {
       return;
     }
 
-    // GET OR CREATE PERSONA AND RETURN ITS ID
-    fetch("https://localhost:8000/api/add_persona", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        persona_name: persona_name,
-        persona_description: persona_name,
-      }),
-      credentials: "include",
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log("Persona ID:", data.persona_id);
-      setPersonaId(data.persona_id);
-      setUserId(data.user_id);
-      setConversationId(data.conversation_id);
-    })
-    .catch(err => console.error("Persona creation failed:", err));
-  }, [token, persona_name]);
+    const createPersona = async () => {
+      try {
+        const response = await authFetch("https://localhost:8000/api/add_persona", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            persona_name: persona_name,
+            persona_description: persona_name,
+          }),
+        });
+        
+        if (!response) return; // Request was handled (401 redirect)
+        
+        const data = await response.json();
+        console.log("Persona ID:", data.persona_id);
+        setPersonaId(data.persona_id);
+        setUserId(data.user_id);
+        setConversationId(data.conversation_id);
+      } catch (err) {
+        console.error("Persona creation failed:", err);
+      }
+    };
+    
+    createPersona();
+  }, [token, persona_name, authFetch]);
 
     // ——— LOAD HISTORY ———
   useEffect(() => {

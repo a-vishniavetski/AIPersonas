@@ -5,10 +5,12 @@ import {
   handleGoogleCallback,
   testAuthorization,
 } from "./AuthApi.js"; // Adjust path as needed
+import { useAuthenticatedFetch } from "../Chat/ChatWindowsApi.js";
 
 const AuthButton = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const authFetch = useAuthenticatedFetch();
 
   const handleOAuth = async () => {
     try {
@@ -19,13 +21,15 @@ const AuthButton = () => {
     }
   };
 
-  const handleAuthTest = async () => {
+    const handleTestAuth = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const data = await testAuthorization(token);
-      alert("Authorized! Response: " + JSON.stringify(data));
-    } catch (err) {
-      console.error("Authorization test error:", err);
+      const result = await testAuthorization(authFetch);
+      if (result) {
+        console.log('Authorization successful:', result);
+      }
+      // If result is null, user was redirected due to 401
+    } catch (error) {
+      console.error('Authorization test failed:', error);
     }
   };
 
@@ -50,7 +54,7 @@ const AuthButton = () => {
   return (
     <div className="flex gap-2">
       {localStorage.getItem("token") ? (
-        <button onClick={handleAuthTest}>
+        <button onClick={handleTestAuth}>
           Test Auth
         </button>
       ) : (
