@@ -3,6 +3,7 @@ import sys
 
 import logging
 import tempfile
+from datetime import datetime
 
 from starlette.exceptions import HTTPException
 from starlette.responses import FileResponse
@@ -209,8 +210,8 @@ async def pdf_conversation(request: ConversationHistory, user: User = Depends(cu
     """
     persona: Personas = await get_persona_by_conversation_id(request.conversation_id)
     metadata = {
-        "date": "TODO",
-        "username": User.email,
+        "date": datetime.now(),
+        "username": user.email,
         "bot_name": persona.name,
     }
     messages = await get_messages_from_conversation(request.conversation_id)
