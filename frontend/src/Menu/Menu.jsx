@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import "./Menu.css";
 import LoginModal from '../Auth/LoginModal/LoginModal';
@@ -17,10 +17,52 @@ const initialPersonas = [
 ];
 
 function Menu() {
-  const [personas, setPersonas] = useState(initialPersonas);
+  const [personas, setPersonas] = useState([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showAddPersonaModal, setShowAddPersonaModal] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+  const fetchUserPersonas = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch('https://localhost:8000/api/get_user_personas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch personas');
+      }
+
+      const data = await response.json();
+
+      // Extract array of persona names
+      const fetchedNames = data.persona_names.map(p => p.persona_name);
+
+      // Create a Set of existing persona names for fast lookup
+      const existingNames = new Set(initialPersonas.map(p => p.name));
+
+      // Filter out already present personas and assign default image
+      const newPersonas = fetchedNames
+        .filter(name => !existingNames.has(name))
+        .map(name => ({
+          name,
+          image: '/personas/default.png', // fallback image for user-created personas
+        }));
+
+      setPersonas([...initialPersonas, ...newPersonas]);
+    } catch (error) {
+      console.error('Error fetching personas:', error);
+      setPersonas(initialPersonas); // fallback if request fails
+    }
+  };
+
+  fetchUserPersonas();
+}, []);
 
   const handlePersonaClick = (personaName) => {
     navigate(`/ChatWindow/${personaName}`);
