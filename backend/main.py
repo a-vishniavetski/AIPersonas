@@ -70,14 +70,6 @@ try:
 except Exception as e:
     logging.error(f"Failed to load Neeko model: {e}")
 
-try:
-    from whisperspeech.pipeline import Pipeline
-    whisper_speech = Pipeline(t2s_ref='whisperspeech/whisperspeech:t2s-v1.95-small-8lang.model',
-                s2a_ref='whisperspeech/whisperspeech:s2a-v1.95-medium-7lang.model')
-    logging.info("WhisperSpeech model loaded.")
-except Exception as e:
-    logging.error(f"Failed to load WhisperSpeech model: {e}")
-
 
 class UserMessage(BaseModel):
     prompt: str
@@ -187,7 +179,7 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
     # Prepare message from qdrant
     # conversation_history = process_qdrant_results(search_results)
 
-    generated_text = ask_character(model=model, tokenizer=tokenizer, character=request.persona,
+    generated_text = ask_character(model=neeko_model, tokenizer=neeko_tokenizer, character=request.persona,
                                     profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
                                    question=request.prompt, temperature=request.temperature)
 
@@ -249,25 +241,6 @@ async def transcribe_audio(file: UploadFile = File(...)):
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-
-class TextToSpeech(BaseModel):
-    text: str
-    lang: str = 'en'
-@app.post("/text_to_speech")
-async def text_to_speech(request: TextToSpeech, background_tasks: BackgroundTasks):
-    # Generate a unique filename
-    output_filename = f"output_{uuid.uuid4().hex}.wav"
-
-    # Generate speech and save to file
-    whisper_speech.generate_to_file(
-        text=request.text,
-        lang=request.lang,
-        fname=output_filename
-    )
-
-    background_tasks.add_task(os.remove, output_filename)
-
-    return FileResponse(output_filename, media_type="audio/wav", filename=output_filename)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, ssl_keyfile="env/key.pem", ssl_certfile="env/cert.pem")

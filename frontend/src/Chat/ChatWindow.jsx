@@ -226,31 +226,6 @@ const ChatWindow = () => {
     }
   };
 
-  // ——— Text to speech handling ———
-  async function handlePlayAudio(text) {
-    try {
-      const response = await fetch('/text_to_speech', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text, lang: 'en' }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate speech');
-      }
-
-      const blob = await response.blob();
-      const audioUrl = URL.createObjectURL(blob);
-
-      const audio = new Audio(audioUrl);
-      await audio.play();
-    } catch (error) {
-      console.error('Audio playback failed:', error);
-    }
-  }
-
 
   return (
     <motion.div
@@ -272,15 +247,6 @@ const ChatWindow = () => {
         <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
           {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >
                 {message.text}
-                {/* Only show play button for bot messages */}
-                {message.sender === 'bot' && (
-                  <button
-                    id="voiceOver_button"
-                    onClick={() => handlePlayAudio(message.text)}
-                  >
-                    🔊
-                  </button>
-                )}
               </div>
           ))}
           <div ref={messagesEndRef} />
