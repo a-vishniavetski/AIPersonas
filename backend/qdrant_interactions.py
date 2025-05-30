@@ -1,8 +1,19 @@
 import uuid
+from enum import Enum
+import random
+import asyncio
+from typing import Dict
 
 from dotenv import load_dotenv
+from qdrant_client.grpc import SearchParams
+from qdrant_client.models import PointStruct, VectorParams, Distance
 from qdrant_client import QdrantClient
+import torch
+from torch_geometric.nn.nlp import SentenceTransformer
+from transformers import AutoTokenizer, AutoModel, DistilBertTokenizer, DistilBertModel
+
 import os
+from datetime import datetime, timezone
 
 load_dotenv('./env/.env')
 
@@ -12,48 +23,112 @@ qdrant_client = QdrantClient(
 
 )
 
+COLLECTION_NAME = "conversation_messages"
+
+print(qdrant_client.get_collections())
+
+#create collection
+#
+# qdrant_client.recreate_collection(
+#     collection_name=COLLECTION_NAME,
+#     vectors_config=VectorParams(size=768, distance=Distance.COSINE),
+# )
 
 
-# print(qdrant_client.get_collections())
+tokenizer = AutoTokenizer.from_pretrained("bert-base-multilingual-cased")
+model = AutoModel.from_pretrained("bert-base-multilingual-cased")
 
-# Definiujemy typy użytkowników (np. USER, BOT)
-class SenderType:
-    USER = "USER"
-    BOT = "BOT"
+print("BBBB")
 
-# Funkcja do zapisywania wiadomości w Qdrant (wektory)
-def save_message_to_qdrant(conversation_id, sender_type, content, vector):
-    qdrant_client.upsert(
-        collection_name="conversations",  # Nazwa kolekcji w Qdrant
-        points=[
-            {
-                'id': uuid.uuid4(),  # Generujemy nowy UUID dla punktu
-                'payload': {
-                    'conversation_id': conversation_id,
-                    'sender_type': sender_type,  # Dodajemy typ użytkownika
-                    'content': content
-                },
-                'vector': vector  # Wehikuł: wektor reprezentujący wiadomość
-            }
-        ]
+async def get_embeddings(text: str) -> list:
+    """Generate embeddings for the input text using DistilBERT model."""
+    print("generating_embed")
+    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+    with torch.no_grad():
+        outputs = model(**inputs)
+    embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()
+    return embeddings
+
+
+print(qdrant_client.get_collections())
+
+# #
+# def build_context_from_points(points: list[dict]) -> str:
+#     """
+#     Build conversation context string from Qdrant points payload.
+#     """
+#     # Sort points by timestamp to preserve message order
+#     sorted_points = sorted(points, key=lambda p: p.payload.get("timestamp", 0))
+#
+#     context_lines = []
+#     for point in sorted_points:
+#         payload = point.payload
+#         sender = payload.get("sender", "Unknown")
+#         text = payload.get("text", "")
+#         context_lines.append(f"{sender}: {text}")
+#
+#     return "\n".join(context_lines) + "\n"
+#
+#
+# async def get_conversation_embeddings(conversation_id: str) -> list[dict]:
+#     filter = Filter(
+#         must=[
+#             FieldCondition(
+#                 key="conversation_id",
+#                 match=MatchValue(value=conversation_id)
+#             )
+#         ]
+#     )
+#     dummy_vector = [0.0] * 768
+#
+#     response = qdrant_client.search(
+#         collection_name=COLLECTION_NAME,
+#         query_filter=filter,
+#         with_payload=True,
+#         query_vector=dummy_vector,
+#         limit=1000
+#     )
+#     return response
+#
+#
+# model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
+
+async def save_message_to_qdrant(conversation_id, user_message, response):
+    # Combine prompt and response into a single string
+    combined_text = f"User: {user_message}\nBot: {response}"
+
+    # Generate embedding vector
+    embedding_vector = await get_embeddings(combined_text)
+
+    # Metadata for retrieval
+    metadata: Dict = {
+        "conversation_id": conversation_id,
+        "user_prompt": user_message,
+        "bot_response": response,
+        "timestamp": datetime.utcnow()
+    }
+
+    # Save to Qdrant
+    point = PointStruct(
+        id=str(uuid.uuid4()),  # string UUID
+        vector=embedding_vector,
+        payload=metadata
     )
 
-# Funkcja do wyszukiwania wiadomości w Qdrant
-def search_messages_in_qdrant(conversation_id, sender_type=None, top_k=5):
-    # Przygotowujemy filtr w zależności od podanego typu użytkownika
-    filter_criteria = {"conversation_id": conversation_id}
-    if sender_type:
-        filter_criteria['sender_type'] = sender_type  # Dodajemy filtr na typ użytkownika
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, lambda: qdrant_client.upsert(
+        collection_name=COLLECTION_NAME,
+        points=[point]
+    ))
 
-    search_results = qdrant_client.search(
-        collection_name="conversations",  # Nazwa kolekcji
-        query_vector=[],  # Tutaj należy dostarczyć wektor zapytania (np. średnią z poprzednich wiadomości)
-        limit=top_k,  # Liczba wyników do zwrócenia
-        filter=filter_criteria  # Filtrujemy po ID rozmowy i typie użytkownika
-    )
-    return search_results
 
-# Funkcja przetwarzająca wyniki wyszukiwania z Qdrant
-def process_qdrant_results(search_results):
-    conversation_history = "\n".join([result['payload']['content'] for result in search_results])
-    return conversation_history
+
+# ## test of saving conversation:
+# async def main():
+#     user_msg = "Hello, how are you?"
+#     bot_response = "I'm doing well, thanks!"
+#     await save_message_to_qdrant("123", user_msg, bot_response)
+#     print("Message saved to Qdrant.")
+#
+# if __name__ == "__main__":
+#     asyncio.run(main())()
