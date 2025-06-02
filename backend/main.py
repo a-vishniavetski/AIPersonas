@@ -179,8 +179,20 @@ async def send_user_message(request: UserMessage, user: User = Depends(current_a
 async def get_answer(request: UserMessage, User: User = Depends(current_active_user)):
     await save_message(request.conversation_id, SenderType.USER, request.prompt)
 
+    # Retrieve actual semantic context messages as a string
+    semantic_context = await retrieve_semantic_context(request.conversation_id, request.prompt)
+
+    context_prefix = (
+        "Below are a few relevant past messages from the conversation history. "
+        "These should be taken into account when generating the response:\n\n"
+    )
+
+    # Compose the prompt by merging context + user's prompt
+    prompt_with_context = context_prefix + semantic_context + "\n\nUser's question:\n" + request.prompt
+
     generated_text = ask_character(model=neeko_model, tokenizer=neeko_tokenizer, character=request.persona,
-                                   profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed")
+                                    profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
+                                   question=request.prompt, temperature=request.temperature)
 
     await save_message(request.conversation_id, SenderType.BOT, generated_text)
 

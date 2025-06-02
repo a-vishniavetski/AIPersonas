@@ -84,7 +84,7 @@ async def save_message_to_qdrant(conversation_id, user_message, response):
 
 
 ## This retrieves history by conversation-id as-is. No search by context, ordered by timestamps
-async def retrieve_history(conversation_id: str) -> str:
+async def retrieve_history(conversation_id):
     # Use a zero vector of correct size (e.g., 768, adjust to your model)
     dummy_vector = np.zeros(768).tolist()
 
@@ -134,7 +134,7 @@ async def retrieve_history(conversation_id: str) -> str:
 
 
 ## This retrieves history with extra semantic search. Returns messages in order depending of message relevance.
-async def retrieve_semantic_context(conversation_id: str, user_query: str) -> str:
+async def retrieve_semantic_context(conversation_id, user_query):
     # Step 1: Embed the user query into a vector
     query_vector = await get_embeddings(user_query)  # your embedding function, returns e.g. 768-d vector
 
@@ -152,7 +152,7 @@ async def retrieve_semantic_context(conversation_id: str, user_query: str) -> st
         return qdrant_client.search(
             collection_name=COLLECTION_NAME,
             query_vector=query_vector,
-            limit=20,
+            limit=5,
             query_filter=search_filter,
             search_params=SearchParams(hnsw_ef=128)
         )
@@ -191,6 +191,6 @@ async def main():
     context = await retrieve_semantic_context(conversation_id, "jokes")
     print(context)
 
-
-if __name__ == "__main__":
-    asyncio.run(main())()
+#
+# if __name__ == "__main__":
+#     asyncio.run(main())()
