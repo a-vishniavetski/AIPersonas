@@ -184,7 +184,7 @@ def load_model(lora_path="./data/train_output", llm="meta-llama/Llama-3.2-1B"):
 
     return tokenizer, model
 
-def ask_character(model, tokenizer, character: str, profile_dir, embed_dir, question: str) -> str:
+def ask_character(model, tokenizer, character: str, profile_dir, embed_dir, question: str, temperature: float) -> str:
     """
     Ask a single question to the specified character and return only the character's reply.
 
@@ -213,7 +213,9 @@ def ask_character(model, tokenizer, character: str, profile_dir, embed_dir, ques
     }]
 
     # Get full model output
-    full_output = evaluate(tokenizer=tokenizer, model=model, character=character, inputs=inputs)
+    full_output = evaluate(tokenizer=tokenizer, model=model,
+                           character=character, inputs=inputs,
+                           temperature=temperature)
 
     # Extract only the first reply by the character
     match = re.search(rf"{character} \(speaking\):\s*(.*)", full_output)

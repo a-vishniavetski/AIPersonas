@@ -3,6 +3,7 @@ import sys
 
 import logging
 import tempfile
+from datetime import datetime
 
 from starlette.exceptions import HTTPException
 from starlette.responses import FileResponse
@@ -69,19 +70,12 @@ try:
 except Exception as e:
     logging.error(f"Failed to load Neeko model: {e}")
 
-try:
-    from whisperspeech.pipeline import Pipeline
-    whisper_speech = Pipeline(t2s_ref='whisperspeech/whisperspeech:t2s-v1.95-small-8lang.model',
-                s2a_ref='whisperspeech/whisperspeech:s2a-v1.95-medium-7lang.model')
-    logging.info("WhisperSpeech model loaded.")
-except Exception as e:
-    logging.error(f"Failed to load WhisperSpeech model: {e}")
-
 
 class UserMessage(BaseModel):
     prompt: str
     persona: str
     conversation_id: int
+    temperature: float
 
 
 class UserPersonaData(BaseModel):
@@ -103,7 +97,7 @@ class UserData(BaseModel):
 
 
 @app.post('/api/get_user_personas')
-async def get_user_personas(request: UserData, user: User = Depends(current_active_user)):
+async def get_user_personas(user: User = Depends(current_active_user)):
     """
     Get all personas of the user
     """
@@ -208,8 +202,8 @@ async def pdf_conversation(request: ConversationHistory, user: User = Depends(cu
     """
     persona: Personas = await get_persona_by_conversation_id(request.conversation_id)
     metadata = {
-        "date": "TODO",
-        "username": User.email,
+        "date": datetime.now(),
+        "username": user.email,
         "bot_name": persona.name,
     }
     messages = await get_messages_from_conversation(request.conversation_id)
@@ -247,25 +241,6 @@ async def transcribe_audio(file: UploadFile = File(...)):
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-
-class TextToSpeech(BaseModel):
-    text: str
-    lang: str = 'en'
-@app.post("/text_to_speech")
-async def text_to_speech(request: TextToSpeech, background_tasks: BackgroundTasks):
-    # Generate a unique filename
-    output_filename = f"output_{uuid.uuid4().hex}.wav"
-
-    # Generate speech and save to file
-    whisper_speech.generate_to_file(
-        text=request.text,
-        lang=request.lang,
-        fname=output_filename
-    )
-
-    background_tasks.add_task(os.remove, output_filename)
-
-    return FileResponse(output_filename, media_type="audio/wav", filename=output_filename)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, ssl_keyfile="env/key.pem", ssl_certfile="env/cert.pem")

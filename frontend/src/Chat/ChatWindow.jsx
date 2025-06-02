@@ -5,23 +5,26 @@ import './ChatWindow.css';
 import { Input, Button } from '@headlessui/react'
 import { motion } from 'framer-motion';
 import { downloadPDFConversation } from './ChatWindowsApi';
+import { TemperatureKnob } from '../features/TemperatureKnob.jsx';
+import { useAuthenticatedFetch } from './ChatWindowsApi';
 
 // Placeholder until description is fetched from backend
-const loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ";
+const loremIpsum = "Welcome to the AIPersonas by \n'™Twórcy Czatbotów'\n Please use the chat or the mic button to communicate with chosen persona. ENJOY!";
 
 const ChatWindow = () => {
+  const authFetch = useAuthenticatedFetch();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   var {persona_name} = useParams();
   const [userId, setUserId] = useState(null);
   const [personaId, setPersonaId] = useState(null);
   const [conversationId, setConversationId] = useState(null);
+  const [temperature, setTemperature] = useState(0.1);
   // voice message by user
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const audioChunksRef = useRef([]);
-
 
   const [pendingPrompt, setPendingPrompt] = useState(null);
 
@@ -55,30 +58,35 @@ const ChatWindow = () => {
       alert("You must select a persona to send messages");
       return;
     }
+
+    const createPersona = async () => {
+      try {
+        const response = await authFetch("https://localhost:8000/api/add_persona", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            persona_name: persona_name,
+            persona_description: persona_name,
+          }),
+        });
+        
+        if (!response) return; // Request was handled (401 redirect)
+        
+        const data = await response.json();
+        console.log("Persona ID:", data.persona_id);
+        setPersonaId(data.persona_id);
+        setUserId(data.user_id);
+        setConversationId(data.conversation_id);
+      } catch (err) {
+        console.error("Persona creation failed:", err);
+      }
+    };
     
-    // GET OR CREATE PERSONA AND RETURN ITS ID
-    fetch("https://localhost:8000/api/add_persona", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        persona_name: persona_name,
-        persona_description: persona_name,
-      }),
-      credentials: "include",
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log("Persona ID:", data.persona_id);
-      setPersonaId(data.persona_id);
-      setUserId(data.user_id);
-      setConversationId(data.conversation_id);
-    })
-    .catch(err => console.error("Persona creation failed:", err));
-  }, [token, persona_name]);
+    createPersona();
+  }, [token, persona_name, authFetch]);
 
     // ——— LOAD HISTORY ———
   useEffect(() => {
@@ -138,7 +146,8 @@ const ChatWindow = () => {
         body: JSON.stringify({
           prompt,
           persona: persona_name,
-          conversation_id: conversationId
+          conversation_id: conversationId,
+          temperature: temperature
         }),
         credentials: 'include'
       });
@@ -217,34 +226,9 @@ const ChatWindow = () => {
     }
   };
 
-  // ——— Text to speech handling ———
-  async function handlePlayAudio(text) {
-    try {
-      const response = await fetch('/text_to_speech', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text, lang: 'en' }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate speech');
-      }
-
-      const blob = await response.blob();
-      const audioUrl = URL.createObjectURL(blob);
-
-      const audio = new Audio(audioUrl);
-      await audio.play();
-    } catch (error) {
-      console.error('Audio playback failed:', error);
-    }
-  }
-
 
   return (
-    <motion.div 
+    <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -263,15 +247,6 @@ const ChatWindow = () => {
         <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
           {messages.map((message, index) => (<div key={index} className={`message ${message.sender === 'user' ? 'user-message' : 'bot-message'}`} >
                 {message.text}
-                {/* Only show play button for bot messages */}
-                {message.sender === 'bot' && (
-                  <button
-                    id="voiceOver_button"
-                    onClick={() => handlePlayAudio(message.text)}
-                  >
-                    🔊
-                  </button>
-                )}
               </div>
           ))}
           <div ref={messagesEndRef} />
@@ -293,7 +268,12 @@ const ChatWindow = () => {
       <div className="persona-settings">
         <Button className="button persona-settings-button" onClick={handleExportToPdf}>Export to PDF</Button>
         <Button className="button persona-settings-button">Clear chat</Button>
-        <Button className="button persona-settings-button">Change persona</Button>
+        {/*<Button className="button persona-settings-button">Change persona</Button>*/}
+
+        <div style={{ margin: '20px 0', textAlign: 'center' }}>
+          <label style={{ color: 'red', marginBottom: '8px', display: 'block' }}>Creativity</label>
+          <TemperatureKnob value={temperature} onChange={setTemperature} />
+        </div>
       </div>
       {isTranscribing && (
           <div className="overlay-spinner">

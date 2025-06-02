@@ -1,4 +1,5 @@
 // src/Auth/AuthApi.js
+import { useAuthenticatedFetch } from "../Chat/ChatWindowsApi";
 
 const API_BASE = "https://localhost:8000";
 
@@ -29,19 +30,32 @@ export const handleGoogleCallback = async (queryString) => {
   return response.json();
 };
 
-export const testAuthorization = async (token) => {
-  const response = await fetch(`${API_BASE}/authenticated-route`, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    credentials: "include",
-  });
+export const testAuthorization = async (authFetch) => {
+  try {
+    const response = await authFetch(`${API_BASE}/authenticated-route`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+      // credentials: "include" is already handled by authFetch
+    });
 
-  if (!response.ok) {
-    throw new Error(`Authorization failed: ${response.status}`);
+    // If response is null, it means 401 was handled (user redirected)
+    if (!response) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Authorization failed: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    // If it's our 401 redirect error, don't re-throw
+    if (error.message.includes('Unauthorized - redirected')) {
+      return null;
+    }
+    // Re-throw other errors
+    throw error;
   }
-
-  return response.json();
 };
