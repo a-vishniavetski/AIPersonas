@@ -186,7 +186,7 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
 
     generated_text = ask_character(model=neeko_model, tokenizer=neeko_tokenizer, character=request.persona,
                                     profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
-                                   question=request.prompt, temperature=request.temperature)
+                                   question=prompt_with_context, temperature=request.temperature)
 
     await save_message(request.conversation_id, SenderType.BOT, generated_text)
 
