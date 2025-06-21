@@ -20,6 +20,7 @@ const ChatWindow = () => {
   const [personaId, setPersonaId] = useState(null);
   const [conversationId, setConversationId] = useState(null);
   const [temperature, setTemperature] = useState(0.1);
+  const [messageLoading, setMessageLoading] = useState(false);
   // voice message by user
   const [isRecording, setIsRecording] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -171,6 +172,12 @@ const ChatWindow = () => {
 
     // ——— scroll to bottom on new messages ———
   useEffect(() => {
+    if (messages.length === 0) return;
+    if (messages[messages.length-1].sender === 'user') {
+      setMessageLoading(true)
+    } else {
+      setMessageLoading(false)
+    }
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
@@ -226,6 +233,14 @@ const ChatWindow = () => {
     }
   };
 
+  const TypingIndicator = () => (
+    <div className="typing-indicator">
+      <span className="dot" />
+      <span className="dot" />
+      <span className="dot" />
+    </div>
+  );
+
 
   return (
     <motion.div
@@ -249,16 +264,20 @@ const ChatWindow = () => {
                 {message.text}
               </div>
           ))}
+
+          {messageLoading && <TypingIndicator />}
+
           <div ref={messagesEndRef} />
         </div>
 
         <form className="persona-input" onSubmit={handleSubmit}>
-          <Input autoComplete="off" type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
+          <Input autoComplete="off" type="text" disabled={messageLoading} value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type a message..."
           />
-          <Button type="submit">↑</Button>
+          <Button type="submit" disabled={messageLoading}>↑</Button>
            <button
             type="button"
             onClick={toggleRecording}
+            disabled={messageLoading}
             className={`mic-button ${isRecording ? 'recording' : ''}`}
             >
               🎙️

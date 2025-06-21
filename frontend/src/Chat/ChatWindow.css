@@ -242,3 +242,42 @@
   border: 1px solid var(--steel-pink);
 }
 
+.typing-indicator {
+  display: flex;
+  gap: 5px;
+  padding: 10px 15px;
+  margin-top: 10px;
+  margin-left: 10px;
+  background: rgba(255, 0, 0, 0.1); /* subtle red for glass effect */
+  border-radius: 20px;
+  width: fit-content;
+  backdrop-filter: blur(8px);
+}
+
+.typing-indicator .dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ff5555;
+  border-radius: 50%;
+  animation: bounce 1.2s infinite;
+}
+
+.typing-indicator .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-indicator .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+
