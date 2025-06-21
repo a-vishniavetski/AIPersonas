@@ -1,20 +1,18 @@
-import uuid
-from enum import Enum
-import random
 import asyncio
-from typing import Dict
-from qdrant_client.http.models import Filter, FieldCondition, MatchValue, SearchParams
-import numpy as np
-from dotenv import load_dotenv
-from qdrant_client.grpc import SearchParams
-from qdrant_client.models import PointStruct, VectorParams, Distance
-from qdrant_client import QdrantClient
-import torch
-from torch_geometric.nn.nlp import SentenceTransformer
-from transformers import AutoTokenizer, AutoModel, DistilBertTokenizer, DistilBertModel
-
 import os
-from datetime import datetime, timezone
+import uuid
+from datetime import datetime
+from typing import Dict
+
+import numpy as np
+import torch
+# from torch_geometric.nn.nlp import SentenceTransformer
+from dotenv import load_dotenv
+from qdrant_client import QdrantClient
+from qdrant_client.grpc import SearchParams
+from qdrant_client.http.models import Filter, FieldCondition, MatchValue, SearchParams
+from qdrant_client.models import PointStruct
+from transformers import AutoTokenizer, AutoModel
 
 load_dotenv('./env/.env')
 
