@@ -246,15 +246,17 @@ const ChatWindow = () => {
       <div className="persona-description glass-panel glassmorphism-black">
         <div className="description-header">Description</div>
         {isEditing ? (
-          <div>
+          <div style={{height: 200, width: 300, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <textarea
               value={newDescription}
               onChange={(e) => setNewDescription(e.target.value)}
               rows={5}
-              style={{ width: '100%' }}
+              style={{ height: 120, width: '95%', marginBottom: '5px'}}
             />
-            <Button onClick={handleSaveDescription}>Save</Button>
-            <Button onClick={() => setIsEditing(false)}>Cancel</Button>
+            <div>
+              <Button onClick={handleSaveDescription} style={{margin: '5px'}}>Save</Button>
+              <Button onClick={() => setIsEditing(false)} style={{margin: '5px'}}>Cancel</Button>
+            </div>
           </div>
         ) : (
           <div>
