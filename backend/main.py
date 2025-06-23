@@ -39,7 +39,9 @@ from backend.database_interactions import (
     save_message,
     get_messages_from_conversation,
     get_all_user_personas,
-    get_persona_by_conversation_id
+    get_persona_by_conversation_id,
+    get_persona_by_id,
+    update_persona_description as db_update_persona_description
 )
 
 from conversation_pdf import get_pdf_conversation
@@ -97,6 +99,11 @@ class NewPersonaData(BaseModel):
 
 class UserData(BaseModel):
     user_id: uuid.UUID
+
+
+class UpdatePersonaDescriptionRequest(BaseModel):
+    persona_id: int
+    new_description: str
 
 
 @app.post('/api/get_user_personas')
@@ -218,6 +225,25 @@ async def pdf_conversation(request: ConversationHistory, user: User = Depends(cu
         headers={"Content-Disposition": "attachment; filename={0}".format(filename)},
     )
 
+@app.get('/api/get_persona_description/{persona_id}')
+async def get_persona_description(persona_id: int, user: User = Depends(current_active_user)):
+    persona = await get_persona_by_id(persona_id)
+    if not persona or persona.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this persona")
+    return {"description": persona.description}
+
+@app.post('/api/update_persona_description')
+async def update_persona_description(request: UpdatePersonaDescriptionRequest, user: User = Depends(current_active_user)):
+    persona = await get_persona_by_id(request.persona_id)
+    if not persona or persona.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this persona")
+    await db_update_persona_description(request.persona_id, request.new_description)
+    wiki_file_path = f"../Neeko/data/seed_data/profiles/wiki_{request.persona_id}.txt"
+    with open(wiki_file_path, "w") as f:
+        f.write(f"# {persona.name}\n\n{request.new_description}\n")
+    embed_character(character_name=str(request.persona_id), encoder_path="google-bert/bert-large-uncased",
+                    seed_data_path="../Neeko/data/seed_data", save_path="../Neeko/data/embed")
+    return {"message": "Persona description updated successfully"}
 
 
 def allowed_file(filename):
