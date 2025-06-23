@@ -257,7 +257,7 @@ const ChatWindow = () => {
       <div className="persona-dialog glass-panel glassmorphism-black">
         <div className="persona-header">
           <Link to={`/profile/${persona_name}`} className="persona-link">
-            <img src={`/personas/${persona_name.toLowerCase()}.png`} alt={persona_name} />
+            <img src={`https://localhost:8000/static/personas/${persona_name.toLowerCase()}.png`} alt={persona_name} />
           </Link>
           <h3 className='persona-title'>{ persona_name }</h3>
         </div>

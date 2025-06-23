@@ -93,7 +93,13 @@ function Menu() {
             className="persona-card cursor-pointer"
             onClick={() => handlePersonaClick(persona.name)}
           >
-            <img src={persona.image} alt={persona.name} />
+            <img 
+            src={`https://localhost:8000/static/personas/${persona.name.toLowerCase()}.png`} 
+            alt={persona.name} 
+            onError={(e) => {  
+              // Fallback to test_image if API image fails
+              e.target.src = "https://localhost:8000/static/personas/test_image.png";
+            }} />
             <div className="persona-name">{persona.name}</div>
           </div>
         ))}
