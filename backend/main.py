@@ -28,7 +28,7 @@ from huggingface_hub import login
 from pydantic import BaseModel
 from backend.app import app
 from backend.users import current_active_user
-from backend.qdrant_interactions import *
+# from backend.qdrant_interactions import *
 from backend.voice_communication import *
 import uuid
 import uvicorn
@@ -66,13 +66,13 @@ try:
 except Exception as e:
     logging.error(f"Failed to load Whisper model: {e}")
 
-try:
-    neeko_tokenizer, neeko_model = load_model(lora_path="../Neeko/data/train_output")
-    logging.info("Neeko model loaded.")
-except Exception as e:
-    logging.error(f"Failed to load Neeko model: {e}")
+# try:
+#     neeko_tokenizer, neeko_model = load_model(lora_path="../Neeko/data/train_output")
+#     logging.info("Neeko model loaded.")
+# except Exception as e:
+#     logging.error(f"Failed to load Neeko model: {e}")
 
-# neeko_tokenizer, neeko_model = None, None
+neeko_tokenizer, neeko_model = None, None
 
 class UserMessage(BaseModel):
     prompt: str
@@ -177,7 +177,7 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
     await save_message(request.conversation_id, SenderType.USER, request.prompt)
 
     # Retrieve actual semantic context messages as a string
-    semantic_context = await retrieve_semantic_context(request.conversation_id, request.prompt)
+    # semantic_context = await retrieve_semantic_context(request.conversation_id, request.prompt)
 
     context_prefix = (
         "Below are a few relevant past messages from the conversation history. "
@@ -193,7 +193,7 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
 
     await save_message(request.conversation_id, SenderType.BOT, generated_text)
 
-    await save_message_to_qdrant(request.conversation_id, UserMessage.prompt, generated_text)
+    # await save_message_to_qdrant(request.conversation_id, UserMessage.prompt, generated_text)
 
     return generated_text
 

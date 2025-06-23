@@ -229,7 +229,10 @@ const Profile = () => {
         </div>
       </div>
       {showGenerateImageModal && (
-        <GenerateImageModal onClose={() => setShowGenerateImageModal(false)} />
+        <GenerateImageModal 
+          onClose={() => setShowGenerateImageModal(false)} 
+          persona_name={persona_name}
+        />
       )}
     </motion.div>
   );
