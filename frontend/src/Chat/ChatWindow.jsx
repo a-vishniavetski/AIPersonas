@@ -247,7 +247,7 @@ const ChatWindow = () => {
         <div className="description-header">Description</div>
         {isEditing ? (
           <div style={{height: 200, width: 300, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <textarea
+            <textarea className="glass-panel glassmorphism-black"
               value={newDescription}
               onChange={(e) => setNewDescription(e.target.value)}
               rows={5}
