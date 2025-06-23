@@ -256,7 +256,9 @@ const ChatWindow = () => {
       </div>
       <div className="persona-dialog glass-panel glassmorphism-black">
         <div className="persona-header">
-          <img src={`/personas/${persona_name.toLowerCase()}.png`} alt={persona_name} />
+          <Link to={`/profile/${persona_name}`} className="persona-link">
+            <img src={`/personas/${persona_name.toLowerCase()}.png`} alt={persona_name} />
+          </Link>
           <h3 className='persona-title'>{ persona_name }</h3>
         </div>
         <div className="chatbot-messages" style={{ overflowY: 'auto', maxHeight: '400px' }}>
