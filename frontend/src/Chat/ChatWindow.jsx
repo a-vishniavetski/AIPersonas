@@ -288,7 +288,9 @@ const ChatWindow = () => {
       </div>
       <div className="persona-settings">
         <Button className="button persona-settings-button" onClick={handleExportToPdf}>Export to PDF</Button>
-        <Button className="button persona-settings-button">Clear chat</Button>
+        <Link to={`/profile/${persona_name}`} className="persona-link">
+          <Button className="button persona-settings-button">Persona Profile</Button>
+        </Link>
         {/*<Button className="button persona-settings-button">Change persona</Button>*/}
 
         <div style={{ margin: '20px 0', textAlign: 'center' }}>
