@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import './Profile.css';
 import { useAuthenticatedFetch } from '../Chat/ChatWindowsApi';
 import { useNavigate } from 'react-router-dom';
+import GenerateImageModal from './GenerateImageModal/GenerateImageModal';
 
 const Profile = () => {
   const { persona_name } = useParams();
@@ -19,11 +20,14 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState(null);
+  const [showGenerateImageModal, setShowGenerateImageModal] = useState(false);
+
   
   const token = localStorage.getItem("token");
 
   // Load profile data from API
   useEffect(() => {
+
     const fetchProfileData = async () => {
       if (!persona_name) {
         setLoading(false);
@@ -47,6 +51,11 @@ const Profile = () => {
       }
     };
   }, [persona_name, authFetch]);
+
+  // Modal for generation
+  const handleGenerateImageClick = () => {
+    setShowGenerateImageModal(true);
+  };
 
   // Handle file selection
   const handleFileSelect = () => {
@@ -204,7 +213,7 @@ const Profile = () => {
           
           <Button
             className="profile-button"
-            onClick={() => navigate(`/ChatWindow/${persona_name}`)}
+            onClick={handleGenerateImageClick}
           >
             Generate Image with AI
           </Button>
@@ -219,6 +228,9 @@ const Profile = () => {
           
         </div>
       </div>
+      {showGenerateImageModal && (
+        <GenerateImageModal onClose={() => setShowGenerateImageModal(false)} />
+      )}
     </motion.div>
   );
 };
