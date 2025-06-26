@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import PropTypes from "prop-types";
 export const TemperatureKnob = ({ value, onChange }) => {
   // value: 0-1
 
@@ -114,4 +114,9 @@ export const TemperatureKnob = ({ value, onChange }) => {
       </text>
     </svg>
   );
+};
+
+TemperatureKnob.propTypes = {
+  value: PropTypes.number,
+  onChange: PropTypes.func,
 };

@@ -29,7 +29,7 @@ from pydantic import BaseModel
 from backend.app import app
 from backend.users import current_active_user
 # from backend.qdrant_interactions import *
-from backend.voice_communication import *
+import backend.voice_communication
 import uuid
 import uvicorn
 import whisper
@@ -75,6 +75,7 @@ except Exception as e:
 #     logging.error(f"Failed to load Neeko model: {e}")
 
 neeko_tokenizer, neeko_model = None, None
+
 
 class UserMessage(BaseModel):
     prompt: str
@@ -192,10 +193,10 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
     )
 
     # Compose the prompt by merging context + user's prompt
-    prompt_with_context = context_prefix + semantic_context + "\n\nUser's question:\n" + request.prompt
+    prompt_with_context = context_prefix + "\n\nUser's question:\n" + request.prompt  # + semantic_context
 
     generated_text = ask_character(model=neeko_model, tokenizer=neeko_tokenizer, character=request.persona,
-                                    profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
+                                   profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
                                    question=prompt_with_context, temperature=request.temperature)
 
     await save_message(request.conversation_id, SenderType.BOT, generated_text)
@@ -225,6 +226,7 @@ async def pdf_conversation(request: ConversationHistory, user: User = Depends(cu
         headers={"Content-Disposition": "attachment; filename={0}".format(filename)},
     )
 
+
 @app.get('/api/get_persona_description/{persona_id}')
 async def get_persona_description(persona_id: int, user: User = Depends(current_active_user)):
     persona = await get_persona_by_id(persona_id)
@@ -232,8 +234,10 @@ async def get_persona_description(persona_id: int, user: User = Depends(current_
         raise HTTPException(status_code=403, detail="Not authorized to access this persona")
     return {"description": persona.description}
 
+
 @app.post('/api/update_persona_description')
-async def update_persona_description(request: UpdatePersonaDescriptionRequest, user: User = Depends(current_active_user)):
+async def update_persona_description(request: UpdatePersonaDescriptionRequest,
+                                     user: User = Depends(current_active_user)):
     persona = await get_persona_by_id(request.persona_id)
     if not persona or persona.user_id != user.id:
         raise HTTPException(status_code=403, detail="Not authorized to update this persona")
@@ -261,7 +265,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
         temp_file_path = temp_file.name
 
     try:
-        result = transcribe_audio_file(whisper_model, temp_file_path)
+        result = backend.voice_communication.transcribe_audio_file(whisper_model, temp_file_path)
         return {
             "text": result["text"]
         }
@@ -274,9 +278,9 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
 @app.post('/api/upload_persona_image')
 async def upload_persona_image(
-    persona_name: str = Form(...),
-    file: UploadFile = File(...),
-    user: User = Depends(current_active_user)
+        persona_name: str = Form(...),
+        file: UploadFile = File(...),
+        user: User = Depends(current_active_user)
 ):
     """
     Upload and save persona image
@@ -285,51 +289,52 @@ async def upload_persona_image(
         # Validate file type
         if not file.content_type or not file.content_type.startswith('image/'):
             raise HTTPException(status_code=400, detail="File must be an image")
-        
+
         # Check if it's PNG (if you want to enforce PNG only)
         if file.content_type != 'image/png':
             raise HTTPException(status_code=400, detail="Only PNG images are allowed")
-        
+
         # Validate file size (e.g., max 5MB)
         file_size = 0
         content = await file.read()
         file_size = len(content)
-        
+
         if file_size > 8 * 1024 * 1024:  # 5MB limit
             raise HTTPException(status_code=400, detail="File size too large (max 8MB)")
-        
+
         # Create personas directory if it doesn't exist
         PERSONAS_DIR = "./personas"
         os.makedirs(PERSONAS_DIR, exist_ok=True)
-        
+
         # Define the file path
         file_path = os.path.join(PERSONAS_DIR, f"{persona_name.lower()}.png")
-        
+
         # Save the file
         with open(file_path, "wb") as f:
             f.write(content)
-        
+
         logging.info(f"Persona image uploaded for {persona_name} by user {user.email}")
-        
+
         return {
             "message": f"Image uploaded successfully for {persona_name}",
             "filename": f"{persona_name.lower()}.png",
             "size": file_size
         }
-        
+
     except HTTPException:
         # Re-raise HTTP exceptions
         raise
     except Exception as e:
         logging.error(f"Error uploading persona image for {persona_name}: {e}")
         raise HTTPException(status_code=500, detail="Failed to upload image")
-    
+
+
 @app.get("/static/personas/{filename}")
 async def get_persona_image(filename: str):
     file_path = f"./personas/{filename}"
     if os.path.exists(file_path):
         return FileResponse(
-            file_path, 
+            file_path,
             headers={
                 "Cache-Control": "no-cache, no-store, must-revalidate",
                 "Pragma": "no-cache",
@@ -338,6 +343,7 @@ async def get_persona_image(filename: str):
         )
     else:
         raise HTTPException(status_code=404, detail="Image not found")
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000, ssl_keyfile="env/key.pem", ssl_certfile="env/cert.pem")

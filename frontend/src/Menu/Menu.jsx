@@ -90,6 +90,14 @@ function Menu() {
         {personas.map((persona) => (
           <div
             key={persona.name}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handlePersonaClick(persona.name);
+              }
+            }}
             className="persona-card cursor-pointer"
             onClick={() => handlePersonaClick(persona.name)}
           >
@@ -105,6 +113,14 @@ function Menu() {
         ))}
         <div
           className="persona-card cursor-pointer"
+          role="button"
+          tabIndex={1}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleAddPersonaClick();
+            }
+          }}
           onClick={handleAddPersonaClick}
         >
           <img src="/personas/plus.png" alt="Add Persona" />

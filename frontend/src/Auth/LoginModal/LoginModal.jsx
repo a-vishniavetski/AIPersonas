@@ -1,6 +1,7 @@
 import React from 'react';
 import AuthButton from '../AuthButton';
 import './LoginModal.css';
+import PropTypes from "prop-types";
 
 export default function LoginModal({ isOpen, onClose }) {
   if (!isOpen) return null;
@@ -26,3 +27,8 @@ export default function LoginModal({ isOpen, onClose }) {
     </div>
   );
 }
+
+LoginModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+};

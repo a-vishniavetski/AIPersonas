@@ -43,19 +43,20 @@ app.include_router(
     prefix="/auth/jwt",
     tags=["auth"]
 )
+auth_path = "/auth"
 app.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),
-    prefix="/auth",
+    prefix=auth_path,
     tags=["auth"],
 )
 app.include_router(
     fastapi_users.get_reset_password_router(),
-    prefix="/auth",
+    prefix=auth_path,
     tags=["auth"],
 )
 app.include_router(
     fastapi_users.get_verify_router(UserRead),
-    prefix="/auth",
+    prefix=auth_path,
     tags=["auth"],
 )
 app.include_router(
@@ -78,17 +79,3 @@ app.include_router(
 @app.get("/authenticated-route")
 async def authenticated_route(user: User = Depends(current_active_user)):
     return {"message": f"Hello {user.email}!"}
-
-
-# @app.get("/auth/authorize")
-# async def auth_authorize(request: Request):
-#     redirect_uri = "http://127.0.0.1:8000/auth/callback"
-#     return await oauth.google.authorize_redirect(request, redirect_uri)
-#
-# @app.get("/auth/callback")
-# async def auth_callback(request: Request):
-#     token = await oauth.google.authorize_access_token(request)
-#     return JSONResponse(content={
-#         "access_token": token.get("access_token"),
-#         "token_type": token.get("token_type")
-#     })

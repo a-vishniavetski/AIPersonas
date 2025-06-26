@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import "./AddPersonaModal.css";
+import PropTypes from "prop-types";
 
 function AddPersonaModal({ onClose, onAddPersona }) {
   const [name, setName] = useState('');
@@ -77,4 +78,8 @@ function AddPersonaModal({ onClose, onAddPersona }) {
   );
 }
 
+AddPersonaModal.propTypes = {
+  onClose: PropTypes.func,
+  onAddPersona: PropTypes.func,
+}
 export default AddPersonaModal;

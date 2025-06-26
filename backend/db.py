@@ -12,7 +12,6 @@ from sqlalchemy import ForeignKey, DateTime
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, relationship, mapped_column
 
-# DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 DATABASE_URL = "postgresql+asyncpg://ai_dev:password@localhost:5432/AIPersonas"
 
 class Base(DeclarativeBase):
