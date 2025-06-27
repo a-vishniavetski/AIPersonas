@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint ..",
     "preview": "vite preview",
-    "test-frontend": "jest --config tests/jest/jest.config.cjs && npm run cypress:run",
+    "test-frontend": "npm run jest && npm run cypress:run",
+    "jest": "jest --config tests/jest.config.cjs",
     "cypress": "cypress open --config-file tests/cypress.config.js",
     "cypress:run": "cypress run --config-file tests/cypress.config.js"
   },

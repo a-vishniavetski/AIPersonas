@@ -1,6 +1,6 @@
 module.exports = {
   testEnvironment: 'jsdom',
-  rootDir: '.',
+  rootDir: '../.',
   testMatch: ['<rootDir>/tests/jest/*.test.{js,jsx}'],
   setupFilesAfterEnv: ['<rootDir>/tests/jest/jest.setup.js'],
   moduleDirectories: ['node_modules', '<rootDir>/node_modules'],
