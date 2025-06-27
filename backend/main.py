@@ -331,7 +331,7 @@ async def upload_persona_image(
 
 @app.get("/static/personas/{filename}")
 async def get_persona_image(filename: str):
-    file_path = f"./personas/{filename}"
+    file_path = f"backend/personas/{filename}"
     if os.path.exists(file_path):
         return FileResponse(
             file_path,
