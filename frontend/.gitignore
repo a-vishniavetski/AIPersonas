@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 /backend/env/cert.pem
 /backend/env/key.pem
+/tests/cypress/screenshots/

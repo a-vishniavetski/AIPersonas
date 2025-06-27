@@ -8,8 +8,9 @@
     "build": "vite build",
     "lint": "eslint ..",
     "preview": "vite preview",
-    "test-frontend": "jest --config jest.config.cjs",
-    "cypress": "cypress open"
+    "test-frontend": "jest --config tests/jest/jest.config.cjs && npm run cypress:run",
+    "cypress": "cypress open --config-file tests/cypress.config.js",
+    "cypress:run": "cypress run --config-file tests/cypress.config.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.3",
