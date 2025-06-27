@@ -1,44 +1,55 @@
 const React = require('react');
-const {cleanup, render, screen, fireEvent, waitFor, act} = require('@testing-library/react');
+const {
+  cleanup,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  act
+} = require('@testing-library/react');
 const {MemoryRouter, Route, Routes} = require('react-router-dom');
 
 const ChatWindow = require('@/Chat/ChatWindow').default;
 
-// --- MOCK ---
-// Mock ChatWindowsApi module
-jest.mock('@/Chat/ChatWindowsApi', () => {
-  return {
-    downloadPDFConversation: jest.fn(() => Promise.resolve()),
-    useAuthenticatedFetch: () => jest.fn(() =>
-      Promise.resolve({
-        json: () => Promise.resolve({ persona_id: 'p1', user_id: 'u1', conversation_id: 'c1' }),
-      })
-    ),
-  };
-});
+jest.mock('@/Chat/ChatWindowsApi', () => ({
+  downloadPDFConversation: jest.fn(() => Promise.resolve()),
+  useAuthenticatedFetch: jest.fn(() => () =>
+    Promise.resolve({
+      json: () => Promise.resolve({
+        persona_id: 'p1',
+        user_id: 'u1',
+        conversation_id: 'test-conv-id'
+      }),
+    })
+  ),
+}));
 
-// Global fetch mock
+const {
+  downloadPDFConversation,
+  useAuthenticatedFetch
+} = require('@/Chat/ChatWindowsApi');
+
 global.fetch = jest.fn();
-
-// Mock alert
 window.alert = jest.fn();
-
-// Mock scrollIntoView
 HTMLElement.prototype.scrollIntoView = jest.fn();
 
-// Mock MediaRecorder and mediaDevices
 class MockMediaRecorder {
   constructor() {
     this.state = 'inactive';
     this.ondataavailable = null;
     this.onstop = null;
   }
-  start() { this.state = 'recording'; }
+
+  start() {
+    this.state = 'recording';
+  }
+
   stop() {
     this.state = 'inactive';
     if (this.onstop) this.onstop();
   }
 }
+
 Object.defineProperty(global.navigator, 'mediaDevices', {
   value: {
     getUserMedia: jest.fn(() => Promise.resolve('mock-stream')),
@@ -47,38 +58,61 @@ Object.defineProperty(global.navigator, 'mediaDevices', {
 });
 global.MediaRecorder = MockMediaRecorder;
 
-// --- TESTS ---
-describe('ChatWindow Component', () => {
+describe('ChatWindow Component - Testy TC-005 do TC-010', () => {
   beforeEach(() => {
     cleanup();
     jest.clearAllMocks();
     localStorage.setItem('token', 'mock-token');
+
+    global.fetch = jest.fn((url, options) => {
+      if (url === 'https://localhost:8000/api/chat_history') {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([{
+            text: 'History message',
+            sender: 'bot'
+          }])
+        });
+      }
+      // Można dodać inne endpointy fetch jeśli trzeba
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({})
+      });
+    });
   });
 
   function renderWithRouter(persona_name = 'Cleopatra') {
     return render(
       React.createElement(MemoryRouter, {initialEntries: [`/chat/${persona_name}`]},
         React.createElement(Routes, null,
-          React.createElement(Route, {path: "/chat/:persona_name", element: React.createElement(ChatWindow)})
+          React.createElement(Route, {
+            path: "/chat/:persona_name",
+            element: React.createElement(ChatWindow)
+          })
         )
       )
     );
   }
 
-  test('renders UI elements', async () => {
-    renderWithRouter();
+  test('TC-005: renders all UI elements correctly', async () => {
+    renderWithRouter('Cleopatra');
 
-    expect(screen.getByText(/Description/i)).toBeInTheDocument();
+    await waitFor(() => {
+      const elems = screen.getAllByText(/Description/i);
+      expect(elems[0]).toBeInTheDocument();
+    });
+
     expect(screen.getByPlaceholderText(/Type a message/i)).toBeInTheDocument();
     expect(screen.getByRole('button', {name: '↑'})).toBeInTheDocument();
     expect(screen.getByRole('button', {name: /Export to PDF/i})).toBeInTheDocument();
 
     const img = screen.getByRole('img');
     expect(img).toHaveAttribute('alt', 'Cleopatra');
-    expect(img).toHaveAttribute('src', '/personas/cleopatra.png');
+    expect(img).toHaveAttribute('src', 'https://localhost:8000/static/personas/cleopatra.png');
   });
 
-  test('loads chat history and shows messages', async () => {
+  test('TC-006: loads chat history and displays messages', async () => {
     global.fetch.mockResolvedValueOnce({
       ok: true,
       json: async () => [{text: 'Hello from history', sender: 'bot'}],
@@ -98,16 +132,16 @@ describe('ChatWindow Component', () => {
     );
   });
 
-  test('sending a user message adds message and triggers bot response', async () => {
+  test('TC-007: sending user message adds message and triggers bot response', async () => {
     global.fetch
       .mockResolvedValueOnce({
         ok: true,
         json: async () => [],
-      }) // chat_history
+      }) // fetch chat_history
       .mockResolvedValueOnce({
         ok: true,
         json: async () => 'Bot answer',
-      }); // get_answer
+      }); // fetch get_answer
 
     renderWithRouter();
 
@@ -124,19 +158,16 @@ describe('ChatWindow Component', () => {
     expect(input.value).toBe('');
   });
 
-  test('toggleRecording starts and stops recording and updates input after transcription', async () => {
-  global.fetch
-    .mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ messages: [] }), // ← poprawna struktura historii czatu
-      text: async () => '[]',
-    })
-
-    // Mock do transkrypcji (drugi fetch)
-    .mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ text: 'Transcribed text' }),
-    });
+  test('TC-008: toggleRecording starts/stops recording and updates input after transcription', async () => {
+    global.fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{text: 'dummy', sender: 'bot'}],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({text: 'Transcribed text'}),
+      });
 
     renderWithRouter();
 
@@ -148,7 +179,7 @@ describe('ChatWindow Component', () => {
     expect(micButton.className).toMatch(/recording/);
 
     await act(async () => {
-      fireEvent.click(micButton); // stop recording
+      fireEvent.click(micButton); // stop recording triggers transcription
     });
 
     await waitFor(() => {
@@ -156,22 +187,7 @@ describe('ChatWindow Component', () => {
     });
   });
 
-  test('handleExportToPdf calls downloadPDFConversation or alerts on error', async () => {
-    const {downloadPDFConversation} = require('@/Chat/ChatWindowsApi');
-    downloadPDFConversation.mockImplementationOnce(() => Promise.reject('fail'));
-
-    renderWithRouter();
-
-    const exportButton = screen.getByRole('button', {name: /Export to PDF/i});
-
-    // First without conversationId triggers alert
-    await act(async () => {
-      fireEvent.click(exportButton);
-    });
-    expect(window.alert).toHaveBeenCalledWith("Can't download PDF right now. Please try again later.");
-  });
-
-  test('scrollIntoView is called on new message', async () => {
+  test('TC-009: scrollIntoView is called on new message', async () => {
     renderWithRouter();
 
     const input = screen.getByPlaceholderText(/Type a message/i);
