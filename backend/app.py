@@ -1,9 +1,14 @@
+import sys
+import os
+
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from starlette.middleware.sessions import SessionMiddleware
+
+sys.path.append(os.path.join(os.path.dirname(__file__)))  # Otherwise app.py doesn't see db module
 
 from db import User, create_db_and_tables
 from schemas import UserCreate, UserRead, UserUpdate
