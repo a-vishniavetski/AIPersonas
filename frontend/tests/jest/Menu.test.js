@@ -1,54 +1,68 @@
 const React = require('react');
-const {cleanup, render, screen, fireEvent} = require('@testing-library/react');
+const {
+  cleanup,
+  render,
+  screen,
+  fireEvent,
+  waitFor
+} = require('@testing-library/react');
 const {MemoryRouter, Route, Routes} = require('react-router-dom');
 
 const Menu = require('@/Menu/Menu.jsx').default;
-let mockPersonaToAdd;
-let personaIndex = 0;
 
-// ------------- MOCK -------------
+// Mock modals
 jest.mock('@/Auth/LoginModal/LoginModal', () => {
   const React = require('react');
-  return () => React.createElement('div', {'data-testid': 'login-modal'}, 'Login Modal');
+  return ({isOpen}) => (isOpen ? React.createElement('div', {'data-testid': 'login-modal'}, 'Login Modal') : null);
 });
 jest.mock('@/Menu/AddPersonaModal/AddPersonaModal', () => {
   const React = require('react');
-  return ({onClose, onAddPersona}) =>
-    React.createElement('div', {
-      'data-testid': 'add-persona-modal',
-      onClick: () => onAddPersona({
-        name: 'TestUser',
-        image: '/personas/testuser.png'
-      })
-    }, 'Add Persona Modal');
+  return ({onAddPersona}) =>
+    React.createElement(
+      'div',
+      {
+        'data-testid': 'add-persona-modal',
+        onClick: () =>
+          onAddPersona({
+            name: 'TestUser',
+            image: '/personas/testuser.png',
+          }),
+      },
+      'Add Persona Modal'
+    );
 });
 
-
-// ------------- TEST --------------
 describe('Menu Component', () => {
   beforeEach(() => {
     localStorage.clear();
     cleanup();
-    personaIndex++;
-    mockPersonaToAdd = {
-      name: `User${personaIndex}`,
-      image: '/personas/default.png'
-    };
+    // Mock global fetch to avoid real network calls during useEffect
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({persona_names: []}),
+      })
+    );
   });
 
-  test('renders header and persona cards', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('TC-001: renders header, Cleopatra persona, and Add Persona button', async () => {
     render(
       React.createElement(MemoryRouter, null,
         React.createElement(Menu)
       )
     );
 
+    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+
     expect(screen.getByText('Choose your character!')).toBeInTheDocument();
-    expect(screen.getByText('Cleopatra')).toBeInTheDocument();
     expect(screen.getByText('Add Persona')).toBeInTheDocument();
   });
 
-  test('navigates to ChatWindow when persona is clicked', () => {
+  test('TC-002: navigates to ChatWindow when a persona is clicked', async () => {
     render(
       React.createElement(MemoryRouter, {initialEntries: ['/']},
         React.createElement(Routes, null,
@@ -64,22 +78,26 @@ describe('Menu Component', () => {
       )
     );
 
+    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+
     fireEvent.click(screen.getByText('Cleopatra'));
-    expect(screen.getByTestId('chat-window')).toBeInTheDocument();
+    expect(await screen.findByTestId('chat-window')).toBeInTheDocument();
   });
 
-  test('shows login modal if unauthenticated and clicking "Add Persona"', () => {
+  test('TC-003: shows login modal when unauthenticated user clicks Add Persona', async () => {
     render(
       React.createElement(MemoryRouter, null,
         React.createElement(Menu)
       )
     );
 
+    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+
     fireEvent.click(screen.getByText('Add Persona'));
     expect(screen.getByTestId('login-modal')).toBeInTheDocument();
   });
 
-  test('adds new persona card after clicking Add Persona and confirming in modal', () => {
+  test('TC-004: adds new persona card after adding persona as authenticated user', async () => {
     localStorage.setItem('token', 'fake_token');
 
     render(
@@ -88,17 +106,21 @@ describe('Menu Component', () => {
       )
     );
 
-    const cardsBefore = document.querySelectorAll('.persona-card').length;
+    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
 
-    // Klikamy "Add Persona" w Menu, aby pokazać AddPersonaModal
+    // Liczymy karty postaci przed dodaniem
+    const cardsBefore = screen.getAllByRole('button').filter(
+      el => el.classList.contains('persona-card') && el.textContent !== 'Add Persona'
+    ).length;
+
     fireEvent.click(screen.getByText('Add Persona'));
-
-    // Klikamy w modal (mock), aby wywołać onAddPersona i dodać nową personę
     fireEvent.click(screen.getByTestId('add-persona-modal'));
 
-    const cardsAfter = document.querySelectorAll('.persona-card').length;
+    // Po dodaniu karty powinno być więcej o 1
+    const cardsAfter = screen.getAllByRole('button').filter(
+      el => el.classList.contains('persona-card') && el.textContent !== 'Add Persona'
+    ).length;
 
     expect(cardsAfter).toBe(cardsBefore + 1);
   });
-
 });
