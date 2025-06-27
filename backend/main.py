@@ -68,11 +68,11 @@ try:
 except Exception as e:
     logging.error(f"Failed to load Whisper model: {e}")
 
-# try:
-#     neeko_tokenizer, neeko_model = load_model(lora_path="../Neeko/data/train_output")
-#     logging.info("Neeko model loaded.")
-# except Exception as e:
-#     logging.error(f"Failed to load Neeko model: {e}")
+try:
+    neeko_tokenizer, neeko_model = load_model(lora_path="../Neeko/data/train_output")
+    logging.info("Neeko model loaded.")
+except Exception as e:
+    logging.error(f"Failed to load Neeko model: {e}")
 
 neeko_tokenizer, neeko_model = None, None
 
