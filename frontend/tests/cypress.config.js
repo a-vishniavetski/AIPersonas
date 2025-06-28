@@ -1,10 +1,20 @@
-import { defineConfig } from "cypress";
+import {defineConfig} from "cypress";
 
 export default defineConfig({
+  clientCertificates: [
+    {
+      url: 'https://localhost:5173',
+      certs: [
+        {
+          cert: '../backend/env/cert.pem',
+          key: '../backend/env/key.pem'
+        }]
+    }],
   e2e: {
-    specPattern: 'tests/cypress/e2e/**/*.cy.js',
-    supportFile: 'tests/cypress/support/e2e.js',
-    baseUrl: 'http://localhost:5173',
+    specPattern: 'tests/cypress/e2e/*.cy.js',
+    supportFile: false,
+    baseUrl: 'https://localhost:5173',
+    chromeWebSecurity: false,
     screenshotsFolder: 'tests/cypress/screenshots',
   }
 });
