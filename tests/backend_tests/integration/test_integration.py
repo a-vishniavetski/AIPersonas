@@ -1,300 +1,244 @@
-# tests/integration/test_auth_integration.py
+# tests/test_persona_images.py
+import sys
 import pytest
-import asyncio
 import os
-import tempfile
 from pathlib import Path
 from fastapi.testclient import TestClient
-from unittest.mock import patch, Mock
-import httpx
-import jwt
-from datetime import datetime, timedelta
+from unittest.mock import Mock, patch, AsyncMock
+from pathlib import Path
+from io import BytesIO
 
-# Import your app and dependencies
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.append(
+    os.path.dirname( # AIPersonas
+        os.path.dirname( # AIPersonas\tests
+            os.path.dirname( # AIPersonas\tests\backend
+                os.path.dirname( # AIPersonas\tests\backend\backend_tests
+                    os.path.abspath(  # AIPersonas\tests\backend\test_integration.py
+                        __file__ 
+                    )
+                )
+            )
+        )
+    )
+)
 
 from backend.app import app
-from backend.db import get_async_session, User
-from backend.users import current_active_user
-from backend.database_interactions import get_all_user_personas, insert_persona_and_conversation
 
-class TestAuthIntegration:
-    """Integration tests with real auth flow and database"""
-    
-    @pytest.fixture(scope="class")
-    def test_database_url(self):
-        """Setup test database URL"""
-        # Use a test database - could be SQLite for simplicity
-        return "sqlite+aiosqlite:///./test_integration.db"
-    
-    @pytest.fixture(scope="class")
-    def test_app(self, test_database_url):
-        """Setup test app with real database"""
-        # Override database URL for testing
-        os.environ["DATABASE_URL"] = test_database_url
-        
-        # Import after setting env var
-        from backend.db import engine, Base
-        
-        # Create tables
-        asyncio.run(self._create_tables(engine, Base))
-        
-        yield app
-        
-        # Cleanup
-        if os.path.exists("./test_integration.db"):
-            os.remove("./test_integration.db")
-    
-    async def _create_tables(self, engine, Base):
-        """Create database tables"""
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-    
-    @pytest.fixture
-    def client(self, test_app):
-        """Test client with real app"""
-        return TestClient(test_app)
-    
-    @pytest.fixture
-    def mock_google_token_response(self):
-        """Mock Google OAuth token response"""
-        return {
-            "access_token": "mock_access_token",
-            "token_type": "Bearer",
-            "expires_in": 3600,
-            "id_token": self._create_mock_jwt_token()
+class TestIntegration:
+
+    def test_integration_debug_routes(self, client):
+        for route in app.routes:
+            print(f"Route: {route.path} - Methods: {getattr(route, 'methods', 'N/A')}")
+
+    def test_integration_e2e_conversation(self, client, override_auth):
+        """Test a complete workflow: create persona -> chat -> export PDF"""
+        # Step 1: Create new persona
+        persona_data = {
+            "persona_name": "WorkflowBot",
+            "persona_description": "A bot for testing workflows"
         }
-    
-    def _create_mock_jwt_token(self):
-        """Create a mock JWT token with user info"""
-        payload = {
-            "sub": "123456789",
-            "email": "test_integration@example.com",
-            "name": "Integration Test User",
-            "picture": "https://example.com/avatar.jpg",
-            "iat": datetime.utcnow(),
-            "exp": datetime.utcnow() + timedelta(hours=1)
-        }
-        # Note: In real scenario, this would be signed by Google
-        return jwt.encode(payload, "secret", algorithm="HS256")
-    
-    @pytest.fixture
-    def mock_google_userinfo_response(self):
-        """Mock Google userinfo API response"""
-        return {
-            "sub": "123456789",
-            "email": "test_integration@example.com",
-            "name": "Integration Test User",
-            "picture": "https://example.com/avatar.jpg",
-            "email_verified": True
-        }
-    
-    @pytest.fixture
-    async def authenticated_user(self, test_app):
-        """Create a real user in database for testing"""
-        from backend.db import get_async_session
-        from sqlalchemy import select
         
-        async for session in get_async_session():
-            # Check if user already exists
-            result = await session.execute(
-                select(User).where(User.email == "test_integration@example.com")
-            )
-            user = result.scalar_one_or_none()
+        mock_persona_id = 999
+        mock_conversation_id = 888
+        
+        with patch("backend.main.insert_persona_and_conversation", new_callable=AsyncMock) as mock_insert, \
+                patch("backend.main.embed_character") as mock_embed, \
+                patch("builtins.open", create=True):
             
-            if not user:
-                # Create new user
-                user = User(
-                    email="test_integration@example.com",
-                    hashed_password="",  # OAuth users might not have password
-                    is_active=True,
-                    is_verified=True
-                )
-                session.add(user)
-                await session.commit()
-                await session.refresh(user)
+            mock_insert.return_value = (mock_persona_id, mock_conversation_id)
             
-            return user
-    
-    @pytest.fixture
-    async def user_with_personas(self, authenticated_user):
-        """Create test personas for the authenticated user"""
-        # Create some test personas
-        persona_data = [
-            ("Assistant", "A helpful AI assistant for general tasks"),
-            ("Teacher", "An educational AI that helps with learning"),
-            ("Coder", "A programming assistant for code-related questions")
+            # Create persona
+            response = client.post("/api/new_persona", json=persona_data)
+            assert response.status_code == 200
+            
+            # Step 2: Send message and get answer
+            message_data = {
+                "prompt": "Hello WorkflowBot!",
+                "persona": "WorkflowBot",
+                "conversation_id": mock_conversation_id,
+                "temperature": 0.7
+            }
+            
+            with patch("backend.main.save_message", new_callable=AsyncMock), \
+                    patch("backend.main.ask_character") as mock_ask, \
+                    patch("backend.main.SenderType") as mock_sender_type:
+                
+                mock_ask.return_value = "Hello! I'm WorkflowBot, ready to help!"
+                mock_sender_type.USER = "USER"
+                mock_sender_type.BOT = "BOT"
+                
+                response = client.post("/api/get_answer", json=message_data)
+                assert response.status_code == 200
+                
+                # Step 3: Export conversation to PDF
+                conversation_data = {"conversation_id": mock_conversation_id}
+                
+                mock_persona = Mock()
+                mock_persona.name = "WorkflowBot"
+                mock_messages = [{"content": "Hello!", "sender": "user"}]
+                mock_pdf_stream = BytesIO(b"workflow pdf content")
+                
+                with patch("backend.main.get_persona_by_conversation_id", new_callable=AsyncMock) as mock_get_persona, \
+                        patch("backend.main.get_messages_from_conversation", new_callable=AsyncMock) as mock_get_messages, \
+                        patch("backend.main.get_pdf_conversation") as mock_get_pdf, \
+                        patch("backend.main.datetime") as mock_datetime:
+                    
+                    mock_get_persona.return_value = mock_persona
+                    mock_get_messages.return_value = mock_messages
+                    mock_get_pdf.return_value = mock_pdf_stream
+                    mock_datetime.now.return_value = "2024-01-01"
+                    
+                    response = client.post("/api/pdf_conversation", json=conversation_data)
+                    assert response.status_code == 200
+                    assert response.headers["content-type"] == "application/pdf"
+
+    def test_integration_e2e_create_persona(self, client, override_auth):
+        """Integration test: Login -> Get User Personas -> Create new persona -> Get user personas again"""
+        
+        # Initial state - user has existing personas
+        initial_personas = [
+            {"id": 1, "name": "Assistant", "description": "Helpful AI"},
+            {"id": 2, "name": "Teacher", "description": "Educational AI"}
         ]
         
-        persona_ids = []
-        for name, description in persona_data:
-            persona_id, conversation_id = await insert_persona_and_conversation(
-                authenticated_user.id, name, description
-            )
-            persona_ids.append(persona_id)
+        # After creating new persona
+        updated_personas = [
+            {"id": 1, "name": "Assistant", "description": "Helpful AI"},
+            {"id": 2, "name": "Teacher", "description": "Educational AI"},
+            {"id": 3, "name": "NewBot", "description": "A newly created bot"}
+        ]
         
-        return authenticated_user, persona_ids
-    
-    def test_oauth_login_flow_simulation(
-        self, 
-        client, 
-        mock_google_token_response, 
-        mock_google_userinfo_response
-    ):
-        """Test simulated OAuth login flow"""
-        
-        # Step 1: Mock the OAuth callback
-        with patch('httpx.AsyncClient.post') as mock_post, \
-             patch('httpx.AsyncClient.get') as mock_get:
-            
-            # Mock token exchange
-            mock_post.return_value = Mock(
-                status_code=200,
-                json=lambda: mock_google_token_response
-            )
-            
-            # Mock userinfo request
-            mock_get.return_value = Mock(
-                status_code=200,
-                json=lambda: mock_google_userinfo_response
-            )
-            
-            # Simulate OAuth callback (this depends on your OAuth implementation)
-            # You'll need to adapt this to your actual OAuth callback endpoint
-            oauth_callback_data = {
-                "code": "mock_authorization_code",
-                "state": "mock_state"
-            }
-            
-            # If you have an OAuth callback endpoint, test it
-            # response = client.get("/auth/callback", params=oauth_callback_data)
-            # assert response.status_code == 200
-            
-            # For now, we'll simulate successful authentication
-            print("✓ OAuth flow simulation completed")
-    
-    @pytest.mark.asyncio
-    async def test_authenticated_persona_access(self, client, user_with_personas):
-        """Test accessing personas with real authentication"""
-        user, persona_ids = user_with_personas
-        
-        # Create a real JWT token for authentication
-        # (In production, this would come from your OAuth provider)
-        auth_payload = {
-            "sub": str(user.id),
-            "email": user.email,
-            "exp": datetime.utcnow() + timedelta(hours=1)
+        new_persona_data = {
+            "persona_name": "NewBot",
+            "persona_description": "A newly created bot"
         }
         
-        # Use your app's JWT secret (you'll need to expose this for testing)
-        jwt_secret = os.getenv("JWT_SECRET", "your-test-secret")
-        auth_token = jwt.encode(auth_payload, jwt_secret, algorithm="HS256")
+        mock_persona_id = 3
+        mock_conversation_id = 333
         
-        # Override the auth dependency to return our test user
-        def override_current_user():
-            return user
-        
-        app.dependency_overrides[current_active_user] = override_current_user
-        
-        try:
-            # Test getting user personas
-            response = client.post(
-                "/api/get_user_personas",
-                headers={"Authorization": f"Bearer {auth_token}"}
+        with patch("backend.main.get_all_user_personas", new_callable=AsyncMock) as mock_get_personas, \
+            patch("backend.main.insert_persona_and_conversation", new_callable=AsyncMock) as mock_insert, \
+            patch("backend.main.embed_character") as mock_embed, \
+            patch("builtins.open", create=True) as mock_open:
+            
+            mock_insert.return_value = (mock_persona_id, mock_conversation_id)
+            mock_file = Mock()
+            mock_open.return_value.__enter__.return_value = mock_file
+            
+            mock_get_personas.side_effect = [initial_personas, updated_personas]
+            
+            # Step 1: Get initial user personas
+            response = client.post("/api/get_user_personas")
+            assert response.status_code == 200
+            initial_data = response.json()
+            assert len(initial_data["persona_names"]) == 2
+            assert initial_data["persona_names"] == initial_personas
+            
+            # Step 2: Create new persona
+            response = client.post("/api/new_persona", json=new_persona_data)
+            assert response.status_code == 200
+            create_data = response.json()
+            assert create_data["persona_id"] == mock_persona_id
+            assert create_data["persona_name"] == new_persona_data["persona_name"]
+            assert create_data["conversation_id"] == mock_conversation_id
+            
+            # Step 3: Get user personas again to verify addition
+            response = client.post("/api/get_user_personas")
+            assert response.status_code == 200
+            final_data = response.json()
+            assert len(final_data["persona_names"]) == 3
+            assert final_data["persona_names"] == updated_personas
+            
+            # Verify the new persona is in the list
+            new_persona = next(p for p in final_data["persona_names"] if p["name"] == "NewBot")
+            assert new_persona["description"] == "A newly created bot"
+            
+            # Verify all mocks were called correctly
+            assert mock_get_personas.call_count == 2
+            mock_insert.assert_called_once_with(
+                override_auth.id, 
+                new_persona_data["persona_name"], 
+                new_persona_data["persona_description"]
             )
-            
-            # Assertions
-            assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
-            
-            data = response.json()
-            assert "persona_names" in data, "Response should contain persona_names"
-            
-            personas = data["persona_names"]
-            assert len(personas) > 0, "User should have personas"
-            assert len(personas) == 3, "Should have 3 test personas"
-            
-            # Verify persona names
-            persona_names = [p["name"] if isinstance(p, dict) else p for p in personas]
-            expected_names = ["Assistant", "Teacher", "Coder"]
-            
-            for expected_name in expected_names:
-                assert any(expected_name in str(name) for name in persona_names), \
-                    f"Should contain persona: {expected_name}"
-            
-            print("✓ Authentication successful")
-            print("✓ Personas list retrieved")
-            print("✓ Personas list is not empty")
-            print(f"✓ Found {len(personas)} personas: {persona_names}")
-            
-        finally:
-            # Clean up dependency override
-            app.dependency_overrides.clear()
-    
-    @pytest.mark.asyncio
-    async def test_full_integration_workflow(self, client, authenticated_user):
-        """Test complete workflow: auth -> create persona -> get personas"""
-        
-        # Override auth dependency
-        def override_current_user():
-            return authenticated_user
-        
-        app.dependency_overrides[current_active_user] = override_current_user
-        
-        try:
-            # Step 1: Create a new persona
-            new_persona_data = {
-                "persona_name": "IntegrationBot",
-                "persona_description": "A bot created during integration testing"
-            }
-            
-            # Mock the embedding function for this test
-            with patch("backend.main.embed_character"), \
-                 patch("builtins.open", create=True):
-                
-                create_response = client.post("/api/new_persona", json=new_persona_data)
-                assert create_response.status_code == 200
-                
-                create_data = create_response.json()
-                assert create_data["persona_name"] == "IntegrationBot"
-                assert "persona_id" in create_data
-                
-            # Step 2: Verify persona appears in user's persona list
-            list_response = client.post("/api/get_user_personas")
-            assert list_response.status_code == 200
-            
-            list_data = list_response.json()
-            personas = list_data["persona_names"]
-            
-            # Find our created persona
-            found_persona = None
-            for persona in personas:
-                if isinstance(persona, dict):
-                    if persona.get("name") == "IntegrationBot":
-                        found_persona = persona
-                        break
-                elif "IntegrationBot" in str(persona):
-                    found_persona = persona
-                    break
-            
-            assert found_persona is not None, "Created persona should appear in list"
-            
-            print("✓ Full integration workflow completed successfully")
-            print(f"✓ Created persona: {create_data['persona_name']}")
-            print(f"✓ Persona found in list: {found_persona}")
-            
-        finally:
-            app.dependency_overrides.clear()
+            mock_embed.assert_called_once()
+            mock_file.write.assert_called_once()
 
-# Pytest configuration for integration tests
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for the test session."""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
-# Test runner configuration
-if __name__ == "__main__":
-    # Run with: python -m pytest tests/integration/test_auth_integration.py -v
-    pytest.main([__file__, "-v", "-s"])
+    def test_integration_e2e_update_persona(self, client, override_auth):
+        """Integration test: Login -> Get User Personas -> Update persona description -> Get User Personas again"""
+        
+        # Initial state - user has existing personas
+        initial_personas = [
+            {"id": 1, "name": "Assistant", "description": "Helpful AI"},
+            {"id": 2, "name": "Teacher", "description": "Educational AI"}
+        ]
+        
+        # After updating persona description
+        updated_personas = [
+            {"id": 1, "name": "Assistant", "description": "Helpful AI"},
+            {"id": 2, "name": "Teacher", "description": "Advanced Educational AI with deep knowledge"}
+        ]
+        
+        update_data = {
+            "persona_id": 2,
+            "new_description": "Advanced Educational AI with deep knowledge"
+        }
+        
+        # Mock persona object for the update
+        mock_persona = Mock()
+        mock_persona.user_id = override_auth.id
+        mock_persona.name = "Teacher"
+        mock_persona.description = "Educational AI"  # Original description
+        
+        with patch("backend.main.get_all_user_personas", new_callable=AsyncMock) as mock_get_personas, \
+            patch("backend.main.get_persona_by_id", new_callable=AsyncMock) as mock_get_persona, \
+            patch("backend.main.db_update_persona_description", new_callable=AsyncMock) as mock_update_db, \
+            patch("backend.main.embed_character") as mock_embed, \
+            patch("builtins.open", create=True) as mock_open:
+            
+            mock_get_persona.return_value = mock_persona
+            mock_file = Mock()
+            mock_open.return_value.__enter__.return_value = mock_file
+            
+            mock_get_personas.side_effect = [initial_personas, updated_personas]
+            
+            # Step 1: Get initial user personas
+            response = client.post("/api/get_user_personas")
+            assert response.status_code == 200
+            initial_data = response.json()
+            assert len(initial_data["persona_names"]) == 2
+            
+            # Find the persona we're going to update
+            teacher_persona = next(p for p in initial_data["persona_names"] if p["name"] == "Teacher")
+            assert teacher_persona["description"] == "Educational AI"
+            
+            # Step 2: Update persona description
+            response = client.post("/api/update_persona_description", json=update_data)
+            assert response.status_code == 200
+            update_response = response.json()
+            assert update_response["message"] == "Persona description updated successfully"
+            
+            # Step 3: Get user personas again to verify the update
+            response = client.post("/api/get_user_personas")
+            assert response.status_code == 200
+            final_data = response.json()
+            assert len(final_data["persona_names"]) == 2  # Same number of personas
+            
+            # Verify the description was updated
+            updated_teacher = next(p for p in final_data["persona_names"] if p["name"] == "Teacher")
+            assert updated_teacher["description"] == "Advanced Educational AI with deep knowledge"
+            
+            # Verify the other persona remained unchanged
+            assistant_persona = next(p for p in final_data["persona_names"] if p["name"] == "Assistant")
+            assert assistant_persona["description"] == "Helpful AI"
+            
+            assert mock_get_personas.call_count == 2
+            mock_get_persona.assert_called_once_with(update_data["persona_id"])
+            mock_update_db.assert_called_once_with(
+                update_data["persona_id"], 
+                update_data["new_description"]
+            )
+            mock_embed.assert_called_once()
+            mock_file.write.assert_called_once_with(
+                f"# {mock_persona.name}\n\n{update_data['new_description']}\n"
+            )
