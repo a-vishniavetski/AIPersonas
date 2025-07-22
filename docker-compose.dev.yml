@@ -1,0 +1,35 @@
+services:
+  aip-frontend-react:
+    build:
+      context: ./
+      dockerfile: ./frontend/Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app/
+      - /app/node_modules # Prevent overriding node_modules in container by the host
+    environment:
+      - NODE_ENV=development
+
+  aip-backend:
+    build:
+      context: ./
+      dockerfile: ./backend/Dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=development
+
+  aip-database:
+    image: postgres
+    environment:
+      POSTGRES_USER: ai_dev
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: AIPersonas
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data 
+
+volumes:
+  pgdata:
