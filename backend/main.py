@@ -8,27 +8,28 @@ from datetime import datetime
 
 from starlette.exceptions import HTTPException
 from starlette.responses import FileResponse
+from pydantic import BaseModel
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from huggingface_hub import login
+
+hf_token = os.getenv('hf_token')
+login(token=hf_token)
 
 from Neeko.embd_roles import embed_character
 from Neeko.infer import load_model, ask_character
 from fastapi.responses import StreamingResponse
 
-# sys.path.append(os.path.join(os.path.dirname(__file__), '../security'))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
-from fastapi import Depends, UploadFile, File, BackgroundTasks, Form
-from fastapi.staticfiles import StaticFiles
+from fastapi import Depends, UploadFile, File, Form
 
 from backend.db import User, SenderType, Personas
 
-from huggingface_hub import login
-from pydantic import BaseModel
 from backend.app import app
 from backend.users import current_active_user
-# from backend.qdrant_interactions import *
 import backend.voice_communication
 import uuid
 import uvicorn
@@ -48,31 +49,23 @@ from conversation_pdf import get_pdf_conversation
 
 load_dotenv('./env/.env')
 
-# login to HF
-# you should place the HugginFace token in the .env
-# hf_token=<hf_token>
-hf_token = os.getenv('hf_token')
-login(token=hf_token)
-
-# app = FastAPI()
-
 ##### Models loading
 whisper_model = None
 whisper_speech = None
 neeko_model = None
 neeko_tokenizer = None
 logging.info("Loading AI models")
-try:
-    whisper_model = whisper.load_model("base")
-    logging.info("Whisper model loaded.")
-except Exception as e:
-    logging.error(f"Failed to load Whisper model: {e}")
+# try:
+#     whisper_model = whisper.load_model("base")
+#     logging.info("Whisper model loaded.")
+# except Exception as e:
+#     logging.error(f"Failed to load Whisper model: {e}")
 
-try:
-    neeko_tokenizer, neeko_model = load_model(lora_path="../Neeko/data/train_output")
-    logging.info("Neeko model loaded.")
-except Exception as e:
-    logging.error(f"Failed to load Neeko model: {e}")
+# try:
+#     neeko_tokenizer, neeko_model = load_model(lora_path="../Neeko/data/train_output")
+#     logging.info("Neeko model loaded.")
+# except Exception as e:
+#     logging.error(f"Failed to load Neeko model: {e}")
 
 neeko_tokenizer, neeko_model = None, None
 
@@ -346,5 +339,4 @@ async def get_persona_image(filename: str):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000, ssl_keyfile="env/key.pem", ssl_certfile="env/cert.pem")
-    print(app.routes)
+    uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile="backend/env/key.pem", ssl_certfile="backend/env/cert.pem")

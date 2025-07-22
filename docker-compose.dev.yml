@@ -1,5 +1,7 @@
 services:
   aip-frontend-react:
+    depends_on:
+      - aip-backend
     build:
       context: ./
       dockerfile: ./frontend/Dockerfile.dev
@@ -10,15 +12,23 @@ services:
       - /app/node_modules # Prevent overriding node_modules in container by the host
     environment:
       - NODE_ENV=development
+    env_file:
+      - path: ./backend/env/.env
 
   aip-backend:
+    depends_on:
+      - aip-database
     build:
       context: ./
       dockerfile: ./backend/Dockerfile.dev
     ports:
       - "8000:8000"
+    volumes:
+     - ./backend:/code/backend
     environment:
       - ENV=development
+    env_file:
+      - path: ./backend/env/.env
 
   aip-database:
     image: postgres

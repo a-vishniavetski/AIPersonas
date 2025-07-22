@@ -7,8 +7,6 @@ COPY ./frontend .
 
 COPY ./backend ../backend
 
-RUN npm ci
-
 EXPOSE 5173
 
 CMD ["npm", "run", "dev"]
