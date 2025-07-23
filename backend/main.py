@@ -8,7 +8,7 @@ from datetime import datetime
 
 from starlette.exceptions import HTTPException
 from starlette.responses import FileResponse
-from pydantic import BaseModel
+
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -29,7 +29,7 @@ from fastapi import Depends, UploadFile, File, Form
 from backend.db import User, SenderType, Personas, create_db_and_tables
 
 
-
+from backend.models import *
 
 from contextlib import asynccontextmanager
 
@@ -117,7 +117,6 @@ async def authenticated_route(user: User = Depends(current_active_user)):
 
 from backend.users import current_active_user
 import backend.voice_communication
-import uuid
 import uvicorn
 import whisper
 
@@ -152,36 +151,6 @@ try:
     logging.info("Neeko model loaded.")
 except Exception as e:
     logging.error(f"Failed to load Neeko model: {e}")
-
-
-class UserMessage(BaseModel):
-    prompt: str
-    persona: str
-    conversation_id: int
-    temperature: float
-
-
-class UserPersonaData(BaseModel):
-    persona_name: str
-    persona_description: str
-
-
-class ConversationHistory(BaseModel):
-    conversation_id: int
-
-
-class NewPersonaData(BaseModel):
-    persona_name: str
-    persona_description: str
-
-
-class UserData(BaseModel):
-    user_id: uuid.UUID
-
-
-class UpdatePersonaDescriptionRequest(BaseModel):
-    persona_id: int
-    new_description: str
 
 
 @app.post('/api/get_user_personas')
