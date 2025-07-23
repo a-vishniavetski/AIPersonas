@@ -2,13 +2,13 @@ import os
 import sys
 from contextlib import asynccontextmanager
 
-from db import User, create_db_and_tables
+from backend.app.models.models import User, create_db_and_tables
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import endpoints
-from schemas import UserCreate, UserRead, UserUpdate
+from backend.app.api.v1 import routes
+from backend.app.schemas.user_schemas import UserCreate, UserRead, UserUpdate
 from starlette.middleware.sessions import SessionMiddleware
-from users import (SECRET, auth_backend, current_active_user, fastapi_users,
+from backend.app.core.auth import (SECRET, auth_backend, current_active_user, fastapi_users,
                    google_oauth_client)
 
 from models import *
@@ -72,14 +72,14 @@ app.include_router(
     prefix="/auth/google",
     tags=["auth"],
 )
-app.include_router(endpoints.router)
+app.include_router(routes.router)
 
 @app.get("/authenticated-route")
 async def authenticated_route(user: User = Depends(current_active_user)):
     return {"message": f"Hello {user.email}!"}
 
 import uvicorn
-from users import current_active_user
+from backend.app.core.auth import current_active_user
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile="backend/env/key.pem", ssl_certfile="backend/env/cert.pem")

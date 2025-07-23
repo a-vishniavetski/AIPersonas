@@ -10,8 +10,7 @@ COPY ./backend/requirements.txt /code/backend/requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /code/backend/requirements.txt
 
 # COPY ./backend ./backend
-COPY ./Neeko ./Neeko
 
 # CMD ["fastapi", "run", "app/main.py", "--port", "80"]  # Default FastAPI dev server - we have uvicorn instead
 
-CMD ["python", "backend/main.py"]
+CMD ["python", "backend/app/main.py"]

@@ -5,16 +5,16 @@ import tempfile
 from datetime import datetime
 
 import whisper
-from conversation_pdf import get_pdf_conversation
-from database_interactions import (get_all_user_personas,
+from backend.app.services.pdf_service import get_pdf_conversation
+from utils.crud import (get_all_user_personas,
                                    get_messages_from_conversation,
                                    get_persona_by_conversation_id,
                                    get_persona_by_id,
                                    insert_persona_and_conversation,
                                    save_message)
-from database_interactions import \
+from utils.crud import \
     update_persona_description as db_update_persona_description
-from db import Personas, SenderType, User, create_db_and_tables
+from models.models import Personas, SenderType, User, create_db_and_tables
 from dotenv import load_dotenv
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import StreamingResponse
@@ -23,10 +23,18 @@ from Neeko.embd_roles import embed_character
 from Neeko.infer import ask_character, load_model
 from starlette.exceptions import HTTPException
 from starlette.responses import FileResponse
-from users import (auth_backend, current_active_user, fastapi_users,
+from core.auth import (auth_backend, current_active_user, fastapi_users,
                    google_oauth_client)
 
-from models import *
+from backend.app.services.whisper_service import transcribe_audio_file
+
+from schemas.api_schemas import (
+    UserPersonaData,
+    UserMessage,
+    ConversationHistory,
+    UpdatePersonaDescriptionRequest,
+    NewPersonaData
+)
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -255,7 +263,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
         temp_file_path = temp_file.name
 
     try:
-        result = backend.voice_communication.transcribe_audio_file(
+        result = transcribe_audio_file(
             whisper_model, temp_file_path)
         return {
             "text": result["text"]

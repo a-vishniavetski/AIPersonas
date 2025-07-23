@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from db import Conversations, engine, Personas, Messages
+from models.models import Conversations, Personas, Messages
+from core.database import engine
 
 
 # Async version for async contexts
