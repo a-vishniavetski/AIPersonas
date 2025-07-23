@@ -10,6 +10,9 @@ from starlette.exceptions import HTTPException
 from starlette.responses import FileResponse
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.join(os.path.dirname(__file__)))
+sys.path.append(os.path.join(os.path.dirname(__file__)))  # Otherwise app.py doesn't see db module
 
 from huggingface_hub import login
 
@@ -20,34 +23,29 @@ from Neeko.embd_roles import embed_character
 from Neeko.infer import load_model, ask_character
 from fastapi.responses import StreamingResponse
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(os.path.dirname(__file__)))
-
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 
-from backend.db import User, SenderType, Personas, create_db_and_tables
+from db import User, SenderType, Personas, create_db_and_tables
 
 
-from backend.models import *
+from models import *
 
 from fastapi import Depends
 
-
-sys.path.append(os.path.join(os.path.dirname(__file__)))  # Otherwise app.py doesn't see db module
-
-from backend.users import (
+from users import (
     auth_backend,
     current_active_user,
     fastapi_users,
     google_oauth_client,
 )
 
-from backend.users import current_active_user
-import backend.voice_communication
+from users import current_active_user
 import whisper
 
+from models import *
 
-from backend.database_interactions import (
+
+from database_interactions import (
     insert_persona_and_conversation,
     save_message,
     get_messages_from_conversation,

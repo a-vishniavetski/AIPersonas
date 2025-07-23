@@ -22,7 +22,7 @@ sys.path.append(
     )
 )
 
-from backend.main  import app
+from main  import app
 
 class TestIntegration:
 

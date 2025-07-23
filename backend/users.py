@@ -14,7 +14,8 @@ from fastapi_users.authentication import (
 from fastapi_users.db import SQLAlchemyUserDatabase
 from httpx_oauth.clients.google import GoogleOAuth2
 
-from backend.db import User, get_user_db
+from db import User, get_user_db
+from config import get_google_oauth_config, SECRET  # Clean config import
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -24,15 +25,11 @@ SECRET = "SECRET"
 with open(os.path.join(os.path.dirname(__file__), "env/google_oauth_client.json")) as f:
     secrets = json.load(f)
 
-client_id = secrets["web"]["client_id"]
-client_secret = secrets["web"]["client_secret"]
-
-logger.debug(client_id)
-logger.debug(client_secret)
+oauth_config = get_google_oauth_config()
 
 google_oauth_client = GoogleOAuth2(
-    client_id,
-    client_secret,
+    oauth_config["client_id"],
+    oauth_config["client_secret"],
     scopes=['profile', 'email']
 )
 

@@ -1,16 +1,11 @@
 import os
 import sys
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.append(os.path.join(os.path.dirname(__file__)))
-
 from fastapi import Depends
 
-from backend.db import User,create_db_and_tables
-from backend.routes import endpoints
-from backend.models import *
+from db import User,create_db_and_tables
+from routes import endpoints
+from models import *
 
 from contextlib import asynccontextmanager
 
@@ -19,10 +14,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from starlette.middleware.sessions import SessionMiddleware
 
-sys.path.append(os.path.join(os.path.dirname(__file__)))  # Otherwise app.py doesn't see db module
-
-from backend.schemas import UserCreate, UserRead, UserUpdate
-from backend.users import (
+from schemas import UserCreate, UserRead, UserUpdate
+from users import (
     SECRET,
     auth_backend,
     current_active_user,
@@ -94,7 +87,7 @@ app.include_router(endpoints.router)
 async def authenticated_route(user: User = Depends(current_active_user)):
     return {"message": f"Hello {user.email}!"}
 
-from backend.users import current_active_user
+from users import current_active_user
 import uvicorn
 
 
