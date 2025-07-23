@@ -5,7 +5,8 @@ import uuid
 from typing import Optional
 
 from config import SECRET, get_google_oauth_config  # Clean config import
-from backend.app.models.models import User, get_user_db
+from models.models import User
+from core.database import get_user_db
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin, models
 from fastapi_users.authentication import (AuthenticationBackend,
