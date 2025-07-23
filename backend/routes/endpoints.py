@@ -1,65 +1,47 @@
+import logging
 import os
 import sys
-from dotenv import load_dotenv
-
-import logging
 import tempfile
 from datetime import datetime
 
+import whisper
+from conversation_pdf import get_pdf_conversation
+from database_interactions import (get_all_user_personas,
+                                   get_messages_from_conversation,
+                                   get_persona_by_conversation_id,
+                                   get_persona_by_id,
+                                   insert_persona_and_conversation,
+                                   save_message)
+from database_interactions import \
+    update_persona_description as db_update_persona_description
+from db import Personas, SenderType, User, create_db_and_tables
+from dotenv import load_dotenv
+from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi.responses import StreamingResponse
+from huggingface_hub import login
+from Neeko.embd_roles import embed_character
+from Neeko.infer import ask_character, load_model
 from starlette.exceptions import HTTPException
 from starlette.responses import FileResponse
+from users import (auth_backend, current_active_user, fastapi_users,
+                   google_oauth_client)
+
+from models import *
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(os.path.join(os.path.dirname(__file__)))
-sys.path.append(os.path.join(os.path.dirname(__file__)))  # Otherwise app.py doesn't see db module
+# Otherwise app.py doesn't see db module
+sys.path.append(os.path.join(os.path.dirname(__file__)))
 
-from huggingface_hub import login
 
 hf_token = os.getenv('hf_token')
 login(token=hf_token)
 
-from Neeko.embd_roles import embed_character
-from Neeko.infer import load_model, ask_character
-from fastapi.responses import StreamingResponse
-
-from fastapi import APIRouter, Depends, UploadFile, File, Form
-
-from db import User, SenderType, Personas, create_db_and_tables
-
-
-from models import *
-
-from fastapi import Depends
-
-from users import (
-    auth_backend,
-    current_active_user,
-    fastapi_users,
-    google_oauth_client,
-)
-
-from users import current_active_user
-import whisper
-
-from models import *
-
-
-from database_interactions import (
-    insert_persona_and_conversation,
-    save_message,
-    get_messages_from_conversation,
-    get_all_user_personas,
-    get_persona_by_conversation_id,
-    get_persona_by_id,
-    update_persona_description as db_update_persona_description
-)
-
-from conversation_pdf import get_pdf_conversation
 
 load_dotenv('./env/.env')
 
-##### Models loading
+# Models loading
 whisper_model = None
 whisper_speech = None
 neeko_model = None
@@ -72,7 +54,8 @@ except Exception as e:
     logging.error(f"Failed to load Whisper model: {e}")
 
 try:
-    neeko_tokenizer, neeko_model = load_model(lora_path="./Neeko/data/train_output")
+    neeko_tokenizer, neeko_model = load_model(
+        lora_path="./Neeko/data/train_output")
     logging.info("Neeko model loaded.")
 except Exception as e:
     logging.error(f"Failed to load Neeko model: {e}")
@@ -94,7 +77,8 @@ async def get_user_personas(user: User = Depends(current_active_user)):
 
 
 @router.post('/api/add_persona')
-async def add_persona(request: UserPersonaData, user: User = Depends(current_active_user)):
+async def add_persona(request: UserPersonaData,
+                      user: User = Depends(current_active_user)):
     user_id = user.id
     persona_id, conversation_id = await insert_persona_and_conversation(user_id, request.persona_name,
                                                                         request.persona_description)
@@ -107,15 +91,19 @@ async def add_persona(request: UserPersonaData, user: User = Depends(current_act
 
 
 @router.post('/api/new_persona')
-async def add_new_persona(request: NewPersonaData, user: User = Depends(current_active_user)):
+async def add_new_persona(
+        request: NewPersonaData,
+        user: User = Depends(current_active_user)):
     user_id = user.id
     user_email = user.email
     with open(f"{'./Neeko/data/seed_data/profiles'}/wiki_{request.persona_name}.txt", "w") as f:
         f.write(f"# {request.persona_name}\n\n{request.persona_description}\n")
 
-    embed_character(character_name=request.persona_name, encoder_path="google-bert/bert-large-uncased",
-                    seed_data_path="./Neeko/data/seed_data",
-                    save_path="./Neeko/data/embed")
+    embed_character(
+        character_name=request.persona_name,
+        encoder_path="google-bert/bert-large-uncased",
+        seed_data_path="./Neeko/data/seed_data",
+        save_path="./Neeko/data/embed")
     persona_id, conversation_id = await insert_persona_and_conversation(user_id, request.persona_name,
                                                                         request.persona_description)
     return {
@@ -127,7 +115,9 @@ async def add_new_persona(request: NewPersonaData, user: User = Depends(current_
 
 
 @router.post('/api/chat_history')
-async def get_chats_history(request: ConversationHistory, user: User = Depends(current_active_user)):
+async def get_chats_history(
+        request: ConversationHistory,
+        user: User = Depends(current_active_user)):
     """
     Get ONE specific conversation to load into the chat window.
     """
@@ -139,7 +129,8 @@ async def get_chats_history(request: ConversationHistory, user: User = Depends(c
 
 
 @router.post('/api/user_message')
-async def send_user_message(request: UserMessage, user: User = Depends(current_active_user)):
+async def send_user_message(request: UserMessage,
+                            user: User = Depends(current_active_user)):
     # Extract user ID from token
     # token = authorization.replace("Bearer ", "") if authorization else None
     # if not token:
@@ -155,33 +146,44 @@ async def send_user_message(request: UserMessage, user: User = Depends(current_a
 
 
 @router.post('/api/get_answer')
-async def get_answer(request: UserMessage, User: User = Depends(current_active_user)):
+async def get_answer(
+        request: UserMessage,
+        User: User = Depends(current_active_user)):
     await save_message(request.conversation_id, SenderType.USER, request.prompt)
 
     # Retrieve actual semantic context messages as a string
-    # semantic_context = await retrieve_semantic_context(request.conversation_id, request.prompt)
+    # semantic_context = await
+    # retrieve_semantic_context(request.conversation_id, request.prompt)
 
     context_prefix = (
         "Below are a few relevant past messages from the conversation history. "
-        "These should be taken into account when generating the response:\n\n"
-    )
+        "These should be taken into account when generating the response:\n\n")
 
     # Compose the prompt by merging context + user's prompt
-    prompt_with_context = context_prefix + "\n\nUser's question:\n" + request.prompt  # + semantic_context
+    prompt_with_context = context_prefix + "\n\nUser's question:\n" + \
+        request.prompt  # + semantic_context
 
-    generated_text = ask_character(model=neeko_model, tokenizer=neeko_tokenizer, character=request.persona,
-                                   profile_dir="./Neeko/data/seed_data/profiles", embed_dir="./Neeko/data/embed",
-                                   question=prompt_with_context, temperature=request.temperature)
+    generated_text = ask_character(
+        model=neeko_model,
+        tokenizer=neeko_tokenizer,
+        character=request.persona,
+        profile_dir="./Neeko/data/seed_data/profiles",
+        embed_dir="./Neeko/data/embed",
+        question=prompt_with_context,
+        temperature=request.temperature)
 
     await save_message(request.conversation_id, SenderType.BOT, generated_text)
 
-    # await save_message_to_qdrant(request.conversation_id, UserMessage.prompt, generated_text)
+    # await save_message_to_qdrant(request.conversation_id,
+    # UserMessage.prompt, generated_text)
 
     return generated_text
 
 
 @router.post('/api/pdf_conversation')
-async def pdf_conversation(request: ConversationHistory, user: User = Depends(current_active_user)):
+async def pdf_conversation(
+        request: ConversationHistory,
+        user: User = Depends(current_active_user)):
     """
     Get ONE specific conversation to load into the chat window.
     """
@@ -197,49 +199,64 @@ async def pdf_conversation(request: ConversationHistory, user: User = Depends(cu
     return StreamingResponse(
         pdf,
         media_type="application/pdf",
-        headers={"Content-Disposition": "attachment; filename={0}".format(filename)},
+        headers={
+            "Content-Disposition": "attachment; filename={0}".format(filename)},
     )
 
 
 @router.get('/api/get_persona_description/{persona_id}')
-async def get_persona_description(persona_id: int, user: User = Depends(current_active_user)):
+async def get_persona_description(
+        persona_id: int,
+        user: User = Depends(current_active_user)):
     persona = await get_persona_by_id(persona_id)
     if not persona or persona.user_id != user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to access this persona")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to access this persona")
     return {"description": persona.description}
 
 
 @router.post('/api/update_persona_description')
-async def update_persona_description(request: UpdatePersonaDescriptionRequest,
-                                     user: User = Depends(current_active_user)):
+async def update_persona_description(
+        request: UpdatePersonaDescriptionRequest,
+        user: User = Depends(current_active_user)):
     persona = await get_persona_by_id(request.persona_id)
     if not persona or persona.user_id != user.id:
-        raise HTTPException(status_code=403, detail="Not authorized to update this persona")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to update this persona")
     await db_update_persona_description(request.persona_id, request.new_description)
-    wiki_file_path = f"./Neeko/data/seed_data/profiles/wiki_{request.persona_id}.txt"
+    wiki_file_path = f"./Neeko/data/seed_data/profiles/wiki_{
+        request.persona_id}.txt"
     with open(wiki_file_path, "w") as f:
         f.write(f"# {persona.name}\n\n{request.new_description}\n")
-    embed_character(character_name=str(request.persona_id), encoder_path="google-bert/bert-large-uncased",
-                    seed_data_path="./Neeko/data/seed_data", save_path="./Neeko/data/embed")
+    embed_character(
+        character_name=str(
+            request.persona_id),
+        encoder_path="google-bert/bert-large-uncased",
+        seed_data_path="./Neeko/data/seed_data",
+        save_path="./Neeko/data/embed")
     return {"message": "Persona description updated successfully"}
 
 
 def allowed_file(filename):
     allowed_extensions = {"mp3", "m4a"}
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+    return '.' in filename and filename.rsplit(
+        '.', 1)[1].lower() in allowed_extensions
 
 
 @router.post("/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
     if not allowed_file(file.filename):
-        raise HTTPException(status_code=400, detail="Invalid file type. Only mp3 and m4a are allowed.")
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file type. Only mp3 and m4a are allowed.")
 
     with tempfile.NamedTemporaryFile(delete=False, suffix='.' + file.filename.rsplit('.', 1)[1]) as temp_file:
         temp_file.write(await file.read())
         temp_file_path = temp_file.name
 
     try:
-        result = backend.voice_communication.transcribe_audio_file(whisper_model, temp_file_path)
+        result = backend.voice_communication.transcribe_audio_file(
+            whisper_model, temp_file_path)
         return {
             "text": result["text"]
         }
@@ -262,11 +279,13 @@ async def upload_persona_image(
     try:
         # Validate file type
         if not file.content_type or not file.content_type.startswith('image/'):
-            raise HTTPException(status_code=400, detail="File must be an image")
+            raise HTTPException(
+                status_code=400, detail="File must be an image")
 
         # Check if it's PNG (if you want to enforce PNG only)
         if file.content_type != 'image/png':
-            raise HTTPException(status_code=400, detail="Only PNG images are allowed")
+            raise HTTPException(
+                status_code=400, detail="Only PNG images are allowed")
 
         # Validate file size (e.g., max 5MB)
         file_size = 0
@@ -274,7 +293,8 @@ async def upload_persona_image(
         file_size = len(content)
 
         if file_size > 8 * 1024 * 1024:  # 5MB limit
-            raise HTTPException(status_code=400, detail="File size too large (max 8MB)")
+            raise HTTPException(
+                status_code=400, detail="File size too large (max 8MB)")
 
         # Create personas directory if it doesn't exist
         PERSONAS_DIR = "./personas"
@@ -287,7 +307,8 @@ async def upload_persona_image(
         with open(file_path, "wb") as f:
             f.write(content)
 
-        logging.info(f"Persona image uploaded for {persona_name} by user {user.email}")
+        logging.info(
+            f"Persona image uploaded for {persona_name} by user {user.email}")
 
         return {
             "message": f"Image uploaded successfully for {persona_name}",

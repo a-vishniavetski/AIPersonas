@@ -1,27 +1,18 @@
 import os
 import sys
-
-from fastapi import Depends
-
-from db import User,create_db_and_tables
-from routes import endpoints
-from models import *
-
 from contextlib import asynccontextmanager
 
+from db import User, create_db_and_tables
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from starlette.middleware.sessions import SessionMiddleware
-
+from routes import endpoints
 from schemas import UserCreate, UserRead, UserUpdate
-from users import (
-    SECRET,
-    auth_backend,
-    current_active_user,
-    fastapi_users,
-    google_oauth_client,
-)
+from starlette.middleware.sessions import SessionMiddleware
+from users import (SECRET, auth_backend, current_active_user, fastapi_users,
+                   google_oauth_client)
+
+from models import *
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -87,9 +78,8 @@ app.include_router(endpoints.router)
 async def authenticated_route(user: User = Depends(current_active_user)):
     return {"message": f"Hello {user.email}!"}
 
-from users import current_active_user
 import uvicorn
-
+from users import current_active_user
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, ssl_keyfile="backend/env/key.pem", ssl_certfile="backend/env/cert.pem")

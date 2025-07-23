@@ -1,21 +1,17 @@
-import os
 import json
-import uuid
 import logging
-
+import os
+import uuid
 from typing import Optional
+
+from config import SECRET, get_google_oauth_config  # Clean config import
+from db import User, get_user_db
 from fastapi import Depends, Request
 from fastapi_users import BaseUserManager, FastAPIUsers, UUIDIDMixin, models
-from fastapi_users.authentication import (
-    AuthenticationBackend,
-    BearerTransport,
-    JWTStrategy,
-)
+from fastapi_users.authentication import (AuthenticationBackend,
+                                          BearerTransport, JWTStrategy)
 from fastapi_users.db import SQLAlchemyUserDatabase
 from httpx_oauth.clients.google import GoogleOAuth2
-
-from db import User, get_user_db
-from config import get_google_oauth_config, SECRET  # Clean config import
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
