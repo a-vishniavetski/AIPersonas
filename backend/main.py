@@ -55,19 +55,11 @@ whisper_speech = None
 neeko_model = None
 neeko_tokenizer = None
 logging.info("Loading AI models")
-# try:
-#     whisper_model = whisper.load_model("base")
-#     logging.info("Whisper model loaded.")
-# except Exception as e:
-#     logging.error(f"Failed to load Whisper model: {e}")
-
-# try:
-#     neeko_tokenizer, neeko_model = load_model(lora_path="../Neeko/data/train_output")
-#     logging.info("Neeko model loaded.")
-# except Exception as e:
-#     logging.error(f"Failed to load Neeko model: {e}")
-
-neeko_tokenizer, neeko_model = None, None
+try:
+    whisper_model = whisper.load_model("small")
+    logging.info("Whisper model loaded.")
+except Exception as e:
+    logging.error(f"Failed to load Whisper model: {e}")
 
 
 class UserMessage(BaseModel):
@@ -129,12 +121,12 @@ async def add_persona(request: UserPersonaData, user: User = Depends(current_act
 async def add_new_persona(request: NewPersonaData, user: User = Depends(current_active_user)):
     user_id = user.id
     user_email = user.email
-    with open(f"{'../Neeko/data/seed_data/profiles'}/wiki_{request.persona_name}.txt", "w") as f:
+    with open(f"{'./Neeko/data/seed_data/profiles'}/wiki_{request.persona_name}.txt", "w") as f:
         f.write(f"# {request.persona_name}\n\n{request.persona_description}\n")
 
     embed_character(character_name=request.persona_name, encoder_path="google-bert/bert-large-uncased",
-                    seed_data_path="../Neeko/data/seed_data",
-                    save_path="../Neeko/data/embed")
+                    seed_data_path="./Neeko/data/seed_data",
+                    save_path="./Neeko/data/embed")
     persona_id, conversation_id = await insert_persona_and_conversation(user_id, request.persona_name,
                                                                         request.persona_description)
     return {
@@ -189,7 +181,7 @@ async def get_answer(request: UserMessage, User: User = Depends(current_active_u
     prompt_with_context = context_prefix + "\n\nUser's question:\n" + request.prompt  # + semantic_context
 
     generated_text = ask_character(model=neeko_model, tokenizer=neeko_tokenizer, character=request.persona,
-                                   profile_dir="../Neeko/data/seed_data/profiles", embed_dir="../Neeko/data/embed",
+                                   profile_dir="./Neeko/data/seed_data/profiles", embed_dir="./Neeko/data/embed",
                                    question=prompt_with_context, temperature=request.temperature)
 
     await save_message(request.conversation_id, SenderType.BOT, generated_text)
@@ -235,11 +227,11 @@ async def update_persona_description(request: UpdatePersonaDescriptionRequest,
     if not persona or persona.user_id != user.id:
         raise HTTPException(status_code=403, detail="Not authorized to update this persona")
     await db_update_persona_description(request.persona_id, request.new_description)
-    wiki_file_path = f"../Neeko/data/seed_data/profiles/wiki_{request.persona_id}.txt"
+    wiki_file_path = f"./Neeko/data/seed_data/profiles/wiki_{request.persona_id}.txt"
     with open(wiki_file_path, "w") as f:
         f.write(f"# {persona.name}\n\n{request.new_description}\n")
     embed_character(character_name=str(request.persona_id), encoder_path="google-bert/bert-large-uncased",
-                    seed_data_path="../Neeko/data/seed_data", save_path="../Neeko/data/embed")
+                    seed_data_path="./Neeko/data/seed_data", save_path="./Neeko/data/embed")
     return {"message": "Persona description updated successfully"}
 
 
