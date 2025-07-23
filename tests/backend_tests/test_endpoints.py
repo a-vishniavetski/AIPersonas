@@ -20,7 +20,7 @@ sys.path.append(
     )
 )
 
-from backend.app import app
+from backend.main  import app
 
 # client = TestClient(app)
 

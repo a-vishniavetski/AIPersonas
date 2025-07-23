@@ -22,7 +22,7 @@ sys.path.append(
     )
 )
 
-from backend.app import app
+from backend.main  import app
 
 class TestAuthUnit:
     """Unit tests for authentication components"""
