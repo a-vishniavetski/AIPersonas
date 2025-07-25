@@ -36,6 +36,7 @@ We've added 𝗪𝗵𝗶𝘀𝗽𝗲𝗿 for STT and connected Pollinations.AI i
 
 One improvement we’re considering is integrating an 𝗥𝗔𝗚 system to inject relevant knowledge, which would be particularly useful in cases like the museum example above.
 
+<!-- 
 ## Configuration and Deployment
 
 #### Steps
@@ -70,8 +71,7 @@ docker run --name my-postgres -e POSTGRES_USER=ai_dev -e POSTGRES_PASSWORD=passw
 ```
 
 #### Train personas
-How to train personas is defined in another grimoire of Elders `Neeko/Manual_train_model.ipynb`
----
+How to train personas is defined in another grimoire of Elders `Neeko/Manual_train_model.ipynb` --> 
 
 ## License
 The code is Apache_2.0 licensed.
