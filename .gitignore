@@ -28,3 +28,5 @@ dist-ssr
 **/.pytest_cache
 
 build_run_compose.sh
+*.pth
+*.pt
