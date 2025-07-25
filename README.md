@@ -25,9 +25,9 @@ A potential business application of this solution is for museums and art galleri
 </div>
 
 ### Chatting
-- **Create custom personas**: Using your own description that will be used to train the AI model.
+- **Create custom personas**: Using your description which will be used to train the AI model.
 - **Talk to them: Speech-to-Text with Whisper**: Press a button and talk instead of typing your messages.
-- **Export your conversation as PDF**: todo.readme
+- **Export your conversation as PDF**: To store them yourself.
 <br>
 
 <div align="center">
@@ -81,4 +81,4 @@ docker run --name my-postgres -e POSTGRES_USER=ai_dev -e POSTGRES_PASSWORD=passw
 How to train personas is defined in another grimoire of Elders `Neeko/Manual_train_model.ipynb` --> 
 
 ## License
-The code is **Apache 2.0** licensed.
+The code is licensed under **Apache 2.0**.
