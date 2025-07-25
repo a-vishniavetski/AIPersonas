@@ -1,5 +1,6 @@
+<img src="img.png" align="right" width="400"></img>
 # ⚜️ Welcome, Traveller ⚜️
-![img.png](img.png)
+
 > The winds whispered thy coming, take thy seat you have a long and perilous road lies ahead of you. <br/>
 > A mighty voyage awaits -> filled to the brim with long-forgotten wisdom, cursed bugs of ancient code and many sleepless nights beneath the pale moon <br/>
 > Fortify thy spirit & behold _**The Manuscript**_:<br/>
