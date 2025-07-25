@@ -26,7 +26,7 @@ A potential business application of this solution is for museums and art galleri
 
 ### Chatting
 - **Create custom personas**: Using your description which will be used to train the AI model.
-- **Talk to them: Speech-to-Text with Whisper**: Press a button and talk instead of typing your messages.
+- **Talk to personas - Speech-to-Text with Whisper**: Press a button and talk instead of typing your messages.
 - **Export your conversation as PDF**: To store them yourself.
 <br>
 
