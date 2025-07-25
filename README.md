@@ -1,6 +1,6 @@
 ## ⚜️ AI Personas ⚜️
 
-<img src="img.png" align="right" height="230"></img>
+<img src="logo.png" align="right" height="230"></img>
 
 > A multi-character role-playing website that allows you to create AI personas that act and speak the way you specify, enabling conversations with historical figures and fictional characters of your choice. <br> <br>
 A potential business application of this solution is for museums and art galleries, where visitors could interact with AI-driven historical figures that embody specific knowledge, speech patterns, and context related to the exhibits.
