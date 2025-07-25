@@ -19,14 +19,20 @@ A potential business application of this solution is for museums and art galleri
 ### Customization
 
 - **Generate custom profile picture with AI**: Or choose a local one.
-<img align="center" width="768" height="432" alt="profile" src="https://github.com/user-attachments/assets/984618a0-0f1f-4603-9087-07e019ef8b7e" />
+
+<div align="center">
+    <img width="768" height="432" alt="profile" src="https://github.com/user-attachments/assets/984618a0-0f1f-4603-9087-07e019ef8b7e" />
+</div>
 
 ### Chatting
 - **Create custom personas**: Using your own description that will be used to train the AI model.
 - **Talk to them: Speech-to-Text with Whisper**: Press a button and talk instead of typing your messages.
 - **Export your conversation as PDF**: todo.readme
 <br>
-<img align="center" width="768" height="432" alt="chat" src="https://github.com/user-attachments/assets/fec985df-bce2-4ecf-8d60-7e5a65294b62" />
+
+<div align="center">
+  <img width="768" height="432" alt="chat" src="https://github.com/user-attachments/assets/fec985df-bce2-4ecf-8d60-7e5a65294b62" />
+</div>
 
 ## Technologies used
 - **[Neeko](https://github.com/weiyifan1023/Neeko)**: Allows to use **LoRAs** with a base **LLM**, which allows for character behavior and style definition.
