@@ -1,24 +1,22 @@
-## ⚜️ AIPersonas ⚜️
+## ⚜️ AI Personas ⚜️
 
-<img src="img.png" align="right" height="250"></img>
+<img src="img.png" align="right" height="230"></img>
 
 > A multi-character role-playing website that allows you to create AI personas that act and speak the way you specify, enabling conversations with historical figures and fictional characters of your choice. <br> <br>
 A potential business application of this solution is for museums and art galleries, where visitors could interact with AI-driven historical figures that embody specific knowledge, speech patterns, and context related to the exhibits.
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+<img src='https://img.shields.io/badge/python-3.9+-blue.svg'>
 
 ## Navigation
 
 - [Overview](#Overview)
 - [Technologies used](#technologies-used)
-- [Configuration and Deployment](#Configuration-and-Deployment)
 - [License](#license)
 
 ## Overview
-Create AI personas that act and speak the way you specify.
 
 ### Customization
-Customize.
 
 - **Generate custom profile picture with AI**: Or choose a local one.
 <img align="center" width="768" height="432" alt="profile" src="https://github.com/user-attachments/assets/984618a0-0f1f-4603-9087-07e019ef8b7e" />
@@ -31,14 +29,13 @@ Customize.
 <img align="center" width="768" height="432" alt="chat" src="https://github.com/user-attachments/assets/fec985df-bce2-4ecf-8d60-7e5a65294b62" />
 
 ## Technologies used
-- **[Neeko](https://github.com/weiyifan1023/Neeko)**:
-- **LLM with LoRAs**:
+- **[Neeko](https://github.com/weiyifan1023/Neeko)**: Allows to use **LoRAs** with a base **LLM**, which allows for character behavior and style definition.
 - **FastAPI**: Backend.
 - **ReactJS**: Frontend.
 - **Whisper**: Speech-to-Text.
 - **[Pollinations.AI](https://pollinations.ai)**: Image generation.
 
-One improvement we’re considering is integrating an **RAG** system to inject relevant knowledge, which would be particularly useful in cases like the museum example above.
+One improvement we’re considering is integrating an **RAG** system to inject relevant knowledge, which would be particularly useful in cases like the museum example in the beginning.
 
 <!-- 
 ## Configuration and Deployment
