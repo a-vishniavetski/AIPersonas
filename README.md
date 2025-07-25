@@ -31,10 +31,14 @@ Customize.
 <img align="center" width="768" height="432" alt="chat" src="https://github.com/user-attachments/assets/fec985df-bce2-4ecf-8d60-7e5a65294b62" />
 
 ## Technologies used
-We achieved this using 𝗟𝗼𝗥𝗔𝘀 on top of an 𝗟𝗟𝗠, with the 𝗡𝗲𝗲𝗸𝗼 framework for the AI layer, and 𝗙𝗮𝘀𝘁𝗔𝗣𝗜 and 𝗥𝗲𝗮𝗰𝘁𝗝𝗦 for the backend and frontend, respectively. 
-We've added 𝗪𝗵𝗶𝘀𝗽𝗲𝗿 for STT and connected Pollinations.AI image generation API for the persona avatars.
+- **[Neeko](https://github.com/weiyifan1023/Neeko)**:
+- **LLM with LoRAs**:
+- **FastAPI**: Backend.
+- **ReactJS**: Frontend.
+- **Whisper**: Speech-to-Text.
+- **[Pollinations.AI](https://pollinations.ai)**: Image generation.
 
-One improvement we’re considering is integrating an 𝗥𝗔𝗚 system to inject relevant knowledge, which would be particularly useful in cases like the museum example above.
+One improvement we’re considering is integrating an **RAG** system to inject relevant knowledge, which would be particularly useful in cases like the museum example above.
 
 <!-- 
 ## Configuration and Deployment
@@ -74,4 +78,4 @@ docker run --name my-postgres -e POSTGRES_USER=ai_dev -e POSTGRES_PASSWORD=passw
 How to train personas is defined in another grimoire of Elders `Neeko/Manual_train_model.ipynb` --> 
 
 ## License
-The code is Apache_2.0 licensed.
+The code is **Apache 2.0** licensed.
